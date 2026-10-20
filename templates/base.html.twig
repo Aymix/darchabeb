@@ -50,20 +50,20 @@
                             </span>
                             <span class="user-name">{{ app.user.displayOrFullName }}</span>
                         </div>
-                        <a href="{{ path('app_ai_chat') }}" class="btn btn-sm btn-ghost"><i data-lucide="sparkles" class="btn-icon"></i> VirtuAi</a>
-                        <a href="{{ path('app_user_profile') }}" class="btn btn-sm btn-ghost"><i data-lucide="settings" class="btn-icon"></i> Profile</a>
+                        <a href="{{ path('app_ai_chat') }}" class="btn btn-sm btn-ghost" title="VirtuAi"><i data-lucide="sparkles" class="btn-icon"></i> VirtuAi</a>
+                        <a href="{{ path('app_user_profile') }}" class="btn btn-sm btn-ghost" title="Profile"><i data-lucide="settings" class="btn-icon"></i> Profile</a>
                         {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                            <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-ghost" title="Dashboard"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
                         {% elseif is_granted('ROLE_SUPERVISOR') %}
-                            <a href="{{ path('app_supervisor_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                            <a href="{{ path('app_supervisor_dashboard') }}" class="btn btn-sm btn-ghost" title="Dashboard"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
                         {% else %}
-                            <a href="{{ path('app_user_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                            <a href="{{ path('app_user_dashboard') }}" class="btn btn-sm btn-ghost" title="Dashboard"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
                         {% endif %}
-                        <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline"><i data-lucide="log-out" class="btn-icon"></i> Sign Out</a>
+                        <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline" title="Sign Out"><i data-lucide="log-out" class="btn-icon"></i> Sign Out</a>
                     {% else %}
-                        <a href="{{ path('app_museum_index') }}" class="btn btn-sm btn-ghost"><i data-lucide="landmark" class="btn-icon"></i> Museum</a>
-                        <a href="{{ path('app_login') }}" class="btn btn-sm btn-ghost"><i data-lucide="log-in" class="btn-icon"></i> Sign In</a>
-                        <a href="{{ path('app_register') }}" class="btn btn-sm btn-primary"><i data-lucide="user-plus" class="btn-icon"></i> Join Now</a>
+                        <a href="{{ path('app_museum_index') }}" class="btn btn-sm btn-ghost" title="Museum"><i data-lucide="landmark" class="btn-icon"></i> Museum</a>
+                        <a href="{{ path('app_login') }}" class="btn btn-sm btn-ghost" title="Sign In"><i data-lucide="log-in" class="btn-icon"></i> Sign In</a>
+                        <a href="{{ path('app_register') }}" class="btn btn-sm btn-primary" title="Join Now"><i data-lucide="user-plus" class="btn-icon"></i> Join Now</a>
                     {% endif %}
                 </div>
             </div>
