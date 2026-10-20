@@ -131,6 +131,11 @@
         </script>
         {% block page_scripts %}{% endblock %}
 
+        {# ── Hand gesture control (webcam, MediaPipe — runs on-device) ── #}
+        <link rel="stylesheet" href="{{ asset('css/gesture.css') }}">
+        <script src="{{ asset('js/gesture/gesture-engine.js') }}" defer></script>
+        <script src="{{ asset('js/gesture/gesture-modules.js') }}" defer></script>
+
         {# ── Voice Navigation (logged-in users) ── #}
         {% if app.user %}
             <script src="{{ asset('js/voice-nav.js') }}" defer></script>
