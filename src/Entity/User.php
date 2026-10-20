@@ -81,6 +81,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'login_count', options: ['default' => 0])]
     private int $loginCount = 0;
 
+    /** Face ID (webcam face match) login — opt-in, see FaceAuthService */
+    #[ORM\Column(name: 'face_login_enabled', options: ['default' => false])]
+    private bool $faceLoginEnabled = false;
+
+    /** 128-number face template (not a photo); null when Face ID is off */
+    #[ORM\Column(name: 'face_descriptor', type: \Doctrine\DBAL\Types\Types::JSON, nullable: true)]
+    private ?array $faceDescriptor = null;
+
+    #[ORM\Column(name: 'face_enrolled_at', type: \Doctrine\DBAL\Types\Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $faceEnrolledAt = null;
+
     #[ORM\Column(name: 'password_change_token', length: 100, nullable: true)]
     private ?string $passwordChangeToken = null;
 
@@ -268,6 +279,28 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function getLoginCount(): int { return $this->loginCount; }
     public function setLoginCount(int $count): static { $this->loginCount = $count; return $this; }
+
+    public function isFaceLoginEnabled(): bool { return $this->faceLoginEnabled && $this->faceDescriptor !== null; }
+    public function getFaceDescriptor(): ?array { return $this->faceDescriptor; }
+    public function getFaceEnrolledAt(): ?\DateTimeImmutable { return $this->faceEnrolledAt; }
+
+    /** @param float[] $descriptor */
+    public function enableFaceLogin(array $descriptor): static
+    {
+        $this->faceDescriptor = array_values($descriptor);
+        $this->faceLoginEnabled = true;
+        $this->faceEnrolledAt = new \DateTimeImmutable();
+        return $this;
+    }
+
+    /** Turning Face ID off deletes the stored face template. */
+    public function disableFaceLogin(): static
+    {
+        $this->faceDescriptor = null;
+        $this->faceLoginEnabled = false;
+        $this->faceEnrolledAt = null;
+        return $this;
+    }
 
     public function getPasswordChangeToken(): ?string { return $this->passwordChangeToken; }
     public function setPasswordChangeToken(?string $token): static { $this->passwordChangeToken = $token; return $this; }
