@@ -1,0 +1,47 @@
+/* VirtuArts — Hand gesture control UI */
+.va-g-ui { position: fixed; inset: 0; pointer-events: none; z-index: 9990; font-family: 'Inter', system-ui, sans-serif; }
+.va-g-toggle {
+    pointer-events: auto; position: fixed; left: 84px; bottom: 24px; height: 48px; padding: 0 16px;
+    display: inline-flex; align-items: center; gap: 8px; border-radius: 999px; cursor: pointer;
+    background: rgba(20, 16, 14, 0.9); color: #fde7d3; border: 1px solid rgba(249, 115, 22, 0.45);
+    font-weight: 700; font-size: 0.85rem; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35); backdrop-filter: blur(8px);
+}
+.va-g-toggle:hover { border-color: #f97316; }
+.va-g-icon { font-size: 1.2rem; line-height: 1; }
+.va-g-dot { width: 8px; height: 8px; border-radius: 50%; background: #57534e; }
+.va-g-ui[data-status="loading"] .va-g-dot { background: #facc15; animation: va-g-pulse 1s infinite; }
+.va-g-ui[data-status="on"] .va-g-dot { background: #22c55e; }
+.va-g-ui[data-status="error"] .va-g-dot { background: #ef4444; }
+@keyframes va-g-pulse { 50% { opacity: 0.3; } }
+
+.va-g-panel {
+    pointer-events: none; position: fixed; left: 84px; bottom: 84px; width: 240px; display: none; opacity: 0.92;
+    background: rgba(20, 16, 14, 0.94); color: #e7e5e4; border: 1px solid rgba(249, 115, 22, 0.35);
+    border-radius: 16px; padding: 10px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45); font-size: 0.75rem;
+}
+.va-g-ui.va-g-on .va-g-panel, .va-g-ui[data-status="loading"] .va-g-panel, .va-g-ui[data-status="error"] .va-g-panel { display: block; }
+.va-g-video-wrap { position: relative; width: 100%; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: #000; }
+.va-g-video, .va-g-skel { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.va-g-video { transform: scaleX(-1); }   /* selfie view; landmarks are mirrored in the engine */
+.va-g-status { margin: 8px 2px 6px; font-weight: 700; color: #fdba74; }
+.va-g-help-title { font-weight: 800; color: #fff; margin: 4px 2px; }
+.va-g-help-row { display: grid; grid-template-columns: 28px 1fr; gap: 4px; padding: 2px; color: #d6d3d1; }
+.va-g-privacy { margin-top: 6px; color: #78716c; font-size: 0.68rem; }
+.va-g-cursors { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; }
+.va-g-toast {
+    position: fixed; top: 84px; left: 50%; transform: translateX(-50%) translateY(-10px); opacity: 0;
+    background: rgba(249, 115, 22, 0.95); color: #1c1917; font-weight: 800; padding: 8px 16px; border-radius: 999px;
+    transition: all 0.2s ease; font-size: 0.85rem;
+}
+.va-g-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* feedback on page elements targeted by a gesture */
+.va-g-hover { outline: 3px solid rgba(249, 115, 22, 0.9) !important; outline-offset: 2px; }
+.va-g-flash { box-shadow: 0 0 0 4px rgba(249, 115, 22, 0.8), 0 0 24px rgba(249, 115, 22, 0.6) !important; }
+.va-g-selected { outline: 3px solid #22c55e !important; outline-offset: 2px; }
+
+@media (max-width: 640px) {
+    .va-g-toggle { left: 16px; bottom: 84px; }
+    .va-g-label { display: none; }
+    .va-g-panel { left: 16px; bottom: 140px; width: 200px; }
+}
