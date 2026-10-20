@@ -1,0 +1,52 @@
+# ═══════════════════════════════════════════
+# LiipImagineBundle — Image Thumbnail & Filter Pipeline
+# Generates optimized thumbnails for art galleries, avatars, museum pieces
+# ═══════════════════════════════════════════
+liip_imagine:
+    # Use the default Symfony data loader (reads from %kernel.project_dir%/public)
+    driver: gd
+
+    resolvers:
+        default:
+            web_path:
+                web_root: '%kernel.project_dir%/public'
+                cache_prefix: media/cache
+
+    filter_sets:
+        cache: ~
+
+        # Tiny avatar thumbnails (sidebar, comments, nav)
+        avatar_thumb:
+            quality: 85
+            filters:
+                thumbnail: { size: [80, 80], mode: outbound }
+
+        # Gallery grid thumbnail (drawing gallery, pixel art gallery, 3D gallery)
+        gallery_thumb:
+            quality: 85
+            filters:
+                thumbnail: { size: [320, 240], mode: outbound }
+
+        # Feed card image (social feed posts)
+        feed_card:
+            quality: 85
+            filters:
+                thumbnail: { size: [600, 400], mode: outbound }
+
+        # Museum piece large view
+        museum_large:
+            quality: 90
+            filters:
+                thumbnail: { size: [1200, 900], mode: inset }
+
+        # Story cover image
+        story_cover:
+            quality: 85
+            filters:
+                thumbnail: { size: [400, 560], mode: outbound }
+
+        # High-res artwork detail view
+        artwork_detail:
+            quality: 92
+            filters:
+                thumbnail: { size: [1600, 1200], mode: inset }

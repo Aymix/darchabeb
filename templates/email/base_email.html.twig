@@ -1,0 +1,53 @@
+{# Base layout for all VirtuArts emails #}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block subject %}VirtuArts{% endblock %}</title>
+    <style>
+        body { margin: 0; padding: 0; background: #0a0a0c; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #fafaf9; }
+        .email-wrapper { max-width: 600px; margin: 0 auto; padding: 40px 20px; }
+        .email-card { background: #16161a; border: 1px solid #2a2a30; border-radius: 16px; overflow: hidden; }
+        .email-header { background: linear-gradient(135deg, #f97316, #f59e0b); padding: 32px 40px; text-align: center; }
+        .email-header h1 { margin: 0; font-size: 24px; font-weight: 800; color: #000; letter-spacing: -0.5px; }
+        .email-header p { margin: 8px 0 0; font-size: 14px; color: rgba(0,0,0,0.7); }
+        .email-body { padding: 40px; }
+        .email-body p { font-size: 15px; line-height: 1.7; color: #a8a29e; margin: 0 0 16px; }
+        .email-body strong { color: #fafaf9; }
+        .email-btn { display: inline-block; padding: 14px 36px; background: linear-gradient(135deg, #f97316, #f59e0b); color: #000; text-decoration: none; font-weight: 700; font-size: 15px; border-radius: 999px; margin: 20px 0; }
+        .email-btn:hover { opacity: 0.9; }
+        .email-divider { height: 1px; background: #2a2a30; margin: 24px 0; }
+        .email-info-box { background: #1e1e24; border: 1px solid #2a2a30; border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .email-info-box .label { font-size: 12px; font-weight: 600; color: #78716c; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .email-info-box .value { font-size: 16px; font-weight: 700; color: #fdba74; }
+        .email-warning-box { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); border-radius: 12px; padding: 20px; margin: 16px 0; }
+        .email-warning-box p { color: #fca5a5; margin: 0; }
+        .email-footer { padding: 24px 40px; text-align: center; border-top: 1px solid #2a2a30; }
+        .email-footer p { font-size: 12px; color: #78716c; margin: 0; }
+        .email-footer a { color: #f97316; text-decoration: none; }
+        .text-muted { color: #78716c !important; font-size: 13px !important; }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <div class="email-card">
+            {% block header %}
+            <div class="email-header">
+                <h1>Virtu<span style="font-weight:300;">Arts</span></h1>
+                <p>Virtual Youth Arts House</p>
+            </div>
+            {% endblock %}
+
+            <div class="email-body">
+                {% block body %}{% endblock %}
+            </div>
+
+            <div class="email-footer">
+                <p>&copy; {{ "now"|date("Y") }} VirtuArts. All rights reserved.<br>
+                <a href="https://virtuarts.com">virtuarts.com</a></p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

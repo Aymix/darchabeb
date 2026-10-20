@@ -1,0 +1,632 @@
+{% extends 'base.html.twig' %}
+{% block title %}3D Creation Studio — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/shape-builder.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/aura-embed.css') }}">
+{% endblock %}
+
+{% block body %}
+{# Hide the global navbar on this fullscreen builder page #}
+<style>
+    .navbar { display: none !important; }
+    .main-content { padding-top: 0 !important; margin-top: 0 !important; }
+    .footer { display: none !important; }
+    .sb-page { padding-top: 0 !important; }
+    .sb-layout { height: 100vh !important; }
+</style>
+
+<div class="sb-page">
+    <div class="sb-bg"></div>
+
+    <div class="sb-layout">
+        {# ── TOP BAR ── #}
+        <div class="sb-topbar">
+            <div class="sb-topbar-left">
+                <a href="{{ path('app_user_dashboard') }}">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Dashboard
+                </a>
+                <span class="sb-topbar-title">3D Creation Studio</span>
+            </div>
+            <div class="sb-topbar-actions">
+                {# Undo / Redo #}
+                <button class="sb-btn sb-btn-ghost sb-btn-sm sb-btn-icon" id="sb-undo-btn" title="Undo (Ctrl+Z)" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h10a5 5 0 015 5v2M3 10l4-4M3 10l4 4"/></svg>
+                </button>
+                <button class="sb-btn sb-btn-ghost sb-btn-sm sb-btn-icon" id="sb-redo-btn" title="Redo (Ctrl+Shift+Z)" disabled>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H11a5 5 0 00-5 5v2M21 10l-4-4M21 10l-4 4"/></svg>
+                </button>
+
+                <span class="sb-topbar-sep"></span>
+
+                <button class="sb-btn sb-btn-ghost sb-btn-sm" id="sb-reset-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    Reset
+                </button>
+                <a href="{{ path('app_shapes3d_gallery') }}" class="sb-btn sb-btn-ghost sb-btn-sm">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Gallery
+                </a>
+                <button class="sb-btn sb-btn-primary sb-btn-sm" id="sb-screenshot-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Save Scene
+                </button>
+            </div>
+        </div>
+
+        {# ── SIDEBAR ── #}
+        <div class="sb-sidebar">
+
+            {# ━━━ ADD SHAPES ━━━ #}
+            <div class="sb-panel">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                        Add Shape
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    <div class="sb-shape-grid">
+                        <button class="sb-shape-btn" data-add-shape="cube">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                            Cube
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="sphere">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                            Sphere
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="cylinder">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14a9 3 0 0018 0V5"/></svg>
+                            Cylinder
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="cone">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L3 20h18L12 2z"/></svg>
+                            Cone
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="torus">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4"/></svg>
+                            Torus
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="torusknot">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2z"/><path d="M8 12s1-4 4-4 4 4 4 4-1 4-4 4-4-4-4-4z"/></svg>
+                            Knot
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="icosahedron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2"/></svg>
+                            Icosa
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="octahedron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 22 12 12 22 2 12"/></svg>
+                            Octa
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="dodecahedron">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l8 4v8l-8 4-8-4V6l8-4z"/><path d="M12 2v20"/><path d="M4 6l16 8M4 14l16-8"/></svg>
+                            Dodeca
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="capsule">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="7" y="2" width="10" height="20" rx="5"/></svg>
+                            Capsule
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="plane">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+                            Plane
+                        </button>
+                        <button class="sb-shape-btn" data-add-shape="ring">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="5"/></svg>
+                            Ring
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {# ━━━ SCENE OBJECTS ━━━ #}
+            <div class="sb-panel">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h7v7H3zM14 3h7v7h-7zM14 14h7v7h-7zM3 14h7v7H3z"/></svg>
+                        Scene Objects
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    <div id="sb-obj-list">
+                        <div class="sb-obj-empty">No objects yet. Add a shape!</div>
+                    </div>
+                    <div style="display:flex;gap:4px;margin-top:6px;">
+                        <button class="sb-btn sb-btn-ghost sb-btn-sm sb-btn-block" id="sb-duplicate-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                            Duplicate
+                        </button>
+                        <button class="sb-btn sb-btn-danger sb-btn-sm sb-btn-block" id="sb-delete-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
+                            Delete
+                        </button>
+                    </div>
+
+                    {# CSG Boolean Buttons — only visible when 2 objects are selected #}
+                    <div id="sb-csg-buttons" class="sb-csg-group" style="display:none;">
+                        <span class="sb-csg-label">Combine Shapes</span>
+                        <div class="sb-csg-grid">
+                            <button class="sb-btn sb-btn-csg" id="sb-csg-union" title="Union — merge shapes into one">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/></svg>
+                                Union
+                            </button>
+                            <button class="sb-btn sb-btn-csg" id="sb-csg-subtract" title="Subtract — cut shape B from A">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6" stroke-dasharray="3 2"/></svg>
+                                Subtract
+                            </button>
+                            <button class="sb-btn sb-btn-csg" id="sb-csg-intersect" title="Intersect — keep only overlap">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="6" stroke-dasharray="3 2"/><circle cx="15" cy="12" r="6" stroke-dasharray="3 2"/><path d="M12 7.5a6 6 0 010 9"/></svg>
+                                Intersect
+                            </button>
+                        </div>
+                        <span class="sb-csg-hint">Shift+Click to multi-select 2 objects</span>
+                    </div>
+                </div>
+            </div>
+
+            {# ━━━ TRANSFORM ━━━ #}
+            <div class="sb-panel" id="sb-transform-panel" style="display:none;">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M14 10l6.16-6.16M9 21H3v-6M10 14l-6.16 6.16"/></svg>
+                        Transform
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    <div class="sb-transform-modes">
+                        <button class="sb-tf-btn active" data-tf-mode="translate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg>
+                            Move
+                        </button>
+                        <button class="sb-tf-btn" data-tf-mode="rotate">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0115-6.7L21 8"/></svg>
+                            Rotate
+                        </button>
+                        <button class="sb-tf-btn" data-tf-mode="scale">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M14 10l6.16-6.16M9 21H3v-6M10 14l-6.16 6.16"/></svg>
+                            Scale
+                        </button>
+                    </div>
+                    <div class="sb-tf-hint">G = Move · R = Rotate · S = Scale</div>
+
+                    {# Position X/Y/Z #}
+                    <div class="sb-axis-group">
+                        <span class="sb-axis-label">Position</span>
+                        <div class="sb-axis-row">
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag x">X</span>
+                                <input type="number" id="sb-pos-x" step="0.1" value="0">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag y">Y</span>
+                                <input type="number" id="sb-pos-y" step="0.1" value="0">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag z">Z</span>
+                                <input type="number" id="sb-pos-z" step="0.1" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Rotation X/Y/Z #}
+                    <div class="sb-axis-group">
+                        <span class="sb-axis-label">Rotation (°)</span>
+                        <div class="sb-axis-row">
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag x">X</span>
+                                <input type="number" id="sb-rot-x" step="5" value="0">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag y">Y</span>
+                                <input type="number" id="sb-rot-y" step="5" value="0">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag z">Z</span>
+                                <input type="number" id="sb-rot-z" step="5" value="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    {# Scale X/Y/Z #}
+                    <div class="sb-axis-group">
+                        <span class="sb-axis-label">Scale</span>
+                        <div class="sb-axis-row">
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag x">X</span>
+                                <input type="number" id="sb-scl-x" step="0.1" min="0.01" value="1">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag y">Y</span>
+                                <input type="number" id="sb-scl-y" step="0.1" min="0.01" value="1">
+                            </div>
+                            <div class="sb-axis-input">
+                                <span class="sb-axis-tag z">Z</span>
+                                <input type="number" id="sb-scl-z" step="0.1" min="0.01" value="1">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ━━━ MATERIAL ━━━ #}
+            <div class="sb-panel" id="sb-material-panel" style="display:none;">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2.69l5.66 5.66a8 8 0 11-11.31 0z"/></svg>
+                        Material
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    {# Color #}
+                    <div class="sb-color-wrap">
+                        <input type="color" class="sb-color-input" id="sb-color" value="#f97316">
+                        <div class="sb-color-swatches">
+                            <span class="sb-swatch" data-color="#f97316" style="background:#f97316"></span>
+                            <span class="sb-swatch" data-color="#ef4444" style="background:#ef4444"></span>
+                            <span class="sb-swatch" data-color="#22c55e" style="background:#22c55e"></span>
+                            <span class="sb-swatch" data-color="#3b82f6" style="background:#3b82f6"></span>
+                            <span class="sb-swatch" data-color="#eab308" style="background:#eab308"></span>
+                            <span class="sb-swatch" data-color="#a855f7" style="background:#a855f7"></span>
+                            <span class="sb-swatch" data-color="#ec4899" style="background:#ec4899"></span>
+                            <span class="sb-swatch" data-color="#06b6d4" style="background:#06b6d4"></span>
+                            <span class="sb-swatch" data-color="#ffffff" style="background:#ffffff"></span>
+                            <span class="sb-swatch" data-color="#1e1e1e" style="background:#1e1e1e;border:1px solid rgba(255,255,255,0.15)"></span>
+                        </div>
+                    </div>
+
+                    {# Material Type #}
+                    <div class="sb-mat-grid">
+                        <button class="sb-mat-btn active" data-mat="standard">Standard</button>
+                        <button class="sb-mat-btn" data-mat="phong">Phong</button>
+                        <button class="sb-mat-btn" data-mat="toon">Toon</button>
+                        <button class="sb-mat-btn" data-mat="wireframe">Wire</button>
+                        <button class="sb-mat-btn" data-mat="glass">Glass</button>
+                        <button class="sb-mat-btn" data-mat="metal">Metal</button>
+                        <button class="sb-mat-btn" data-mat="emissive">Glow</button>
+                        <button class="sb-mat-btn" data-mat="normal">Normal</button>
+                    </div>
+
+                    {# PBR Sliders #}
+                    <div class="sb-control-row">
+                        <span class="sb-control-label">Rough</span>
+                        <input type="range" class="sb-slider" id="sb-roughness" min="0" max="1" step="0.01" value="0.5">
+                        <span class="sb-slider-val" id="sb-roughness-val">0.50</span>
+                    </div>
+                    <div class="sb-control-row">
+                        <span class="sb-control-label">Metal</span>
+                        <input type="range" class="sb-slider" id="sb-metalness" min="0" max="1" step="0.01" value="0.1">
+                        <span class="sb-slider-val" id="sb-metalness-val">0.10</span>
+                    </div>
+                    <div class="sb-control-row">
+                        <span class="sb-control-label">Alpha</span>
+                        <input type="range" class="sb-slider" id="sb-opacity" min="0" max="1" step="0.01" value="1">
+                        <span class="sb-slider-val" id="sb-opacity-val">1.00</span>
+                    </div>
+                </div>
+            </div>
+
+            {# ━━━ ANIMATION ━━━ #}
+            <div class="sb-panel" id="sb-animation-panel" style="display:none;">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                        Animation
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    <div class="sb-control-row">
+                        <span class="sb-control-label sb-anim-label">Spin X</span>
+                        <input type="range" class="sb-slider sb-slider-anim" id="sb-anim-rx" min="0" max="5" step="0.1" value="0">
+                        <span class="sb-slider-val" id="sb-anim-rx-val">0.00</span>
+                    </div>
+                    <div class="sb-control-row">
+                        <span class="sb-control-label sb-anim-label">Spin Y</span>
+                        <input type="range" class="sb-slider sb-slider-anim" id="sb-anim-ry" min="0" max="5" step="0.1" value="0">
+                        <span class="sb-slider-val" id="sb-anim-ry-val">0.00</span>
+                    </div>
+                    <div class="sb-control-row">
+                        <span class="sb-control-label sb-anim-label">Spin Z</span>
+                        <input type="range" class="sb-slider sb-slider-anim" id="sb-anim-rz" min="0" max="5" step="0.1" value="0">
+                        <span class="sb-slider-val" id="sb-anim-rz-val">0.00</span>
+                    </div>
+                    <div class="sb-control-row">
+                        <span class="sb-control-label sb-anim-label">Float</span>
+                        <input type="range" class="sb-slider sb-slider-anim" id="sb-anim-float" min="0" max="3" step="0.1" value="0">
+                        <span class="sb-slider-val" id="sb-anim-float-val">0.00</span>
+                    </div>
+                    <div class="sb-tf-hint">Add rotation or floating movement to the selected object</div>
+                </div>
+            </div>
+
+            {# ━━━ LIGHTING ━━━ #}
+            <div class="sb-panel" id="sb-lighting-panel">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        Lighting
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    {# Ambient Light #}
+                    <div class="sb-light-section">
+                        <span class="sb-light-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg> Ambient</span>
+                        <div class="sb-control-row">
+                            <input type="color" class="sb-color-input sb-color-input-sm" id="sb-light-ambient-color" value="#ffffff">
+                            <input type="range" class="sb-slider" id="sb-light-ambient-intensity" min="0" max="2" step="0.05" value="0.4">
+                            <span class="sb-slider-val" id="sb-light-ambient-intensity-val">0.40</span>
+                        </div>
+                    </div>
+
+                    {# Directional Light #}
+                    <div class="sb-light-section">
+                        <span class="sb-light-title"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="12" cy="12" r="3"/><path d="M12 5V3M12 21v-2M5 12H3M21 12h-2"/></svg> Directional</span>
+                        <div class="sb-control-row">
+                            <input type="color" class="sb-color-input sb-color-input-sm" id="sb-light-dir-color" value="#ffffff">
+                            <input type="range" class="sb-slider" id="sb-light-dir-intensity" min="0" max="3" step="0.05" value="1.0">
+                            <span class="sb-slider-val" id="sb-light-dir-intensity-val">1.00</span>
+                        </div>
+                        <div class="sb-control-row">
+                            <span class="sb-control-label">X</span>
+                            <input type="range" class="sb-slider" id="sb-light-dir-x" min="-20" max="20" step="0.5" value="8">
+                            <span class="sb-slider-val" id="sb-light-dir-x-val">8.00</span>
+                        </div>
+                        <div class="sb-control-row">
+                            <span class="sb-control-label">Y</span>
+                            <input type="range" class="sb-slider" id="sb-light-dir-y" min="0" max="30" step="0.5" value="12">
+                            <span class="sb-slider-val" id="sb-light-dir-y-val">12.00</span>
+                        </div>
+                        <div class="sb-control-row">
+                            <span class="sb-control-label">Z</span>
+                            <input type="range" class="sb-slider" id="sb-light-dir-z" min="-20" max="20" step="0.5" value="5">
+                            <span class="sb-slider-val" id="sb-light-dir-z-val">5.00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {# ━━━ POLY HAVEN — TEXTURES & HDRIS ━━━ #}
+            <div class="sb-panel" id="sb-polyhaven-panel">
+                <div class="sb-panel-header">
+                    <h3>
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        Poly Haven Assets
+                    </h3>
+                    <svg class="sb-panel-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+                </div>
+                <div class="sb-panel-body">
+                    <div style="display:flex;gap:4px;margin-bottom:8px;">
+                        <button class="sb-mat-btn active" id="ph-type-hdris" data-ph-type="hdris">HDRIs</button>
+                        <button class="sb-mat-btn" id="ph-type-textures" data-ph-type="textures">Textures</button>
+                    </div>
+                    <button id="ph-load-btn" class="sb-btn sb-btn-ghost sb-btn-sm sb-btn-block" style="margin-bottom:8px;">Load Assets</button>
+                    <div id="ph-results" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-height:200px;overflow-y:auto;border-radius:6px;"></div>
+                    <div id="ph-info" style="font-size:.6rem;color:#57534e;margin-top:4px;"></div>
+                </div>
+            </div>
+
+            {# NO SELECTION NOTE #}
+            {# ━━━ AURA AI ASSISTANT ━━━ #}
+            {% include 'components/_aura_panel.html.twig' with { module: '3d_studio' } %}
+
+            {# NO SELECTION NOTE #}
+            <div id="sb-no-selection" style="text-align:center;padding:16px 12px;font-size:0.75rem;color:#57534e;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" width="28" height="28" style="margin:0 auto 8px;display:block;opacity:0.3"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                Click a shape to add it, then click objects in the viewport to select &amp; edit them.
+                <br><small style="color:#44403c;margin-top:4px;display:block;">Shift+Click = Multi-select · Double-click = Rename · Right-click = Context Menu</small>
+            </div>
+
+        </div>
+
+        {# ── 3D VIEWPORT ── #}
+        <div class="sb-viewport" id="sb-viewport">
+            {# Three.js canvas is injected here #}
+
+            {# Viewport toolbar overlay #}
+            <div class="sb-viewport-tools">
+                {# Snap toggle #}
+                <button class="sb-vtool" id="sb-snap-toggle" title="Toggle Snap-to-Grid">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+                </button>
+                <select class="sb-snap-size-select" id="sb-snap-size" title="Grid snap size">
+                    <option value="0.25">0.25</option>
+                    <option value="0.5" selected>0.50</option>
+                    <option value="1">1.00</option>
+                    <option value="2">2.00</option>
+                </select>
+
+                <span class="sb-vtool-sep"></span>
+
+                <button class="sb-vtool active" id="sb-grid-toggle" title="Toggle Grid">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+                </button>
+                <button class="sb-vtool" id="sb-axes-toggle" title="Toggle Axes">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="2" x2="12" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="4" y1="4" x2="20" y2="20"/></svg>
+                </button>
+                <button class="sb-vtool active" id="sb-shadow-toggle" title="Toggle Shadows">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 7V2M12 22v-5M7 12H2M22 12h-5"/></svg>
+                </button>
+            </div>
+
+            {# Camera View Buttons #}
+            <div class="sb-cam-views">
+                <button class="sb-cam-btn" data-cam-view="front" title="Front View">F</button>
+                <button class="sb-cam-btn" data-cam-view="top" title="Top View">T</button>
+                <button class="sb-cam-btn" data-cam-view="right" title="Right View">R</button>
+                <button class="sb-cam-btn" data-cam-view="perspective" title="Perspective View">P</button>
+                <button class="sb-cam-btn sb-cam-focus" id="sb-focus-btn" title="Focus on Selected (F)">⊕</button>
+            </div>
+
+            {# Environment Presets #}
+            <div class="sb-env-bar">
+                <button class="sb-env-btn active" data-env="void" title="Void"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a10 10 0 0 0 0 20" fill="currentColor" opacity=".3"/></svg></button>
+                <button class="sb-env-btn" data-env="studio" title="Studio"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m15 7-6 10"/></svg></button>
+                <button class="sb-env-btn" data-env="sunset" title="Sunset"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 10V2"/><path d="m4.93 10.93 1.41 1.41"/><path d="M2 18h2"/><path d="M20 18h2"/><path d="m19.07 10.93-1.41 1.41"/><path d="M22 22H2"/><path d="M16 18a4 4 0 0 0-8 0"/></svg></button>
+                <button class="sb-env-btn" data-env="midnight" title="Midnight"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg></button>
+                <button class="sb-env-btn" data-env="arena" title="Arena"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="12" rx="10" ry="6"/><path d="M12 6v12"/></svg></button>
+            </div>
+
+            {# Snap Badge #}
+            <div class="sb-snap-badge" id="sb-snap-badge" style="display:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><path d="M3 3h18v18H3z"/></svg>
+                SNAP
+            </div>
+
+            {# HUD badges #}
+            <div class="sb-hud">
+                <div class="sb-hud-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z"/></svg>
+                    Objects: <span class="val" id="sb-obj-count">0</span>
+                </div>
+                <div class="sb-hud-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+                    Three.js
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{# Hidden input for scene loading #}
+<input type="hidden" id="sb-scene-data" value="{{ sceneData|default('') }}">
+{% endblock %}
+
+{% block page_scripts %}
+{# Three.js via ES Module importmap — the only reliable modern approach #}
+<script type="importmap">
+{
+    "imports": {
+        "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+    }
+}
+</script>
+<script type="module" src="{{ asset('js/shape-builder.js') }}"></script>
+<script src="{{ asset('js/aura-embed.js') }}" defer></script>
+<script>
+// ── Poly Haven API — HDRIs & Textures — with scene integration ──
+(function(){
+    const results = document.getElementById('ph-results');
+    const info = document.getElementById('ph-info');
+    const loadBtn = document.getElementById('ph-load-btn');
+    let currentType = 'hdris';
+
+    document.querySelectorAll('[data-ph-type]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('[data-ph-type]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentType = btn.dataset.phType;
+        });
+    });
+
+    loadBtn.addEventListener('click', async () => {
+        results.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#57534e;font-size:.75rem;">Loading…</div>';
+        info.textContent = '';
+        try {
+            const res = await fetch(`{{ path('api_polyhaven_assets') }}?type=${currentType}`);
+            const data = await res.json();
+            if (data.error) { results.innerHTML = `<div style="grid-column:1/-1;color:#f87171;font-size:.75rem;padding:8px;">${data.error}</div>`; return; }
+            if (!data.results.length) { results.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:#57534e;font-size:.75rem;">No assets found.</div>'; return; }
+            results.innerHTML = data.results.map(a => `
+                <div class="ph-asset-card" data-asset-id="${a.id}" data-asset-name="${a.name}" data-asset-type="${currentType}" data-thumb="${a.thumbnail}" 
+                     style="cursor:pointer;border-radius:4px;overflow:hidden;aspect-ratio:1;position:relative;background:rgba(255,255,255,.03);border:2px solid transparent;transition:all .2s;" 
+                     title="Click to apply: ${a.name}\n${a.categories.join(', ')}">
+                    <img src="${a.thumbnail}" alt="${a.name}" style="width:100%;height:100%;object-fit:cover;display:block;transition:transform .2s;"
+                         onmouseover="this.style.transform='scale(1.08)'" onmouseout="this.style.transform='scale(1)'"
+                         onerror="this.parentElement.innerHTML='<div style=padding:8px;font-size:.5rem;color:#78716c;text-align:center>${a.name}</div>'">
+                    <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(transparent,rgba(0,0,0,.8));padding:4px 6px;font-size:.55rem;color:#fff;font-weight:600;">${a.name}</div>
+                </div>
+            `).join('');
+            info.innerHTML = `${data.count} ${currentType} · Click to apply · <a href="https://polyhaven.com" target="_blank" style="color:#f97316;">Poly Haven</a>`;
+
+            // Wire click-to-apply for each asset
+            results.querySelectorAll('.ph-asset-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    const name = card.dataset.assetName;
+                    const id = card.dataset.assetId;
+                    const thumb = card.dataset.thumb;
+                    const type = card.dataset.assetType;
+
+                    // Highlight selected
+                    results.querySelectorAll('.ph-asset-card').forEach(c => c.style.borderColor = 'transparent');
+                    card.style.borderColor = '#f97316';
+
+                    if (type === 'textures') {
+                        applyPolyHavenTexture(thumb, name);
+                    } else if (type === 'hdris') {
+                        applyPolyHavenHDRI(id, name);
+                    }
+                });
+            });
+        } catch(e) { results.innerHTML = '<div style="grid-column:1/-1;color:#f87171;font-size:.75rem;padding:8px;">Failed to load assets.</div>'; }
+    });
+
+    function applyPolyHavenTexture(thumbUrl, name) {
+        import('three').then(THREE => {
+            const loader = new THREE.TextureLoader();
+            loader.setCrossOrigin('anonymous');
+            showToastPH('⏳ Loading texture "' + name + '"...');
+            loader.load(thumbUrl, (texture) => {
+                texture.colorSpace = THREE.SRGBColorSpace;
+                window.dispatchEvent(new CustomEvent('aura-apply-texture', { detail: { texture, name } }));
+                showToastPH('🎨 Texture "' + name + '" applied!');
+            }, undefined, () => {
+                showToastPH('⚠️ Could not load texture');
+            });
+        }).catch(() => {
+            showToastPH('⚠️ Three.js not available');
+        });
+    }
+
+    function applyPolyHavenHDRI(assetId, name) {
+        showToastPH('⏳ Loading HDRI "' + name + '"...');
+        // Load HDRI using RGBELoader from Three.js addons
+        Promise.all([
+            import('three'),
+            import('three/addons/loaders/RGBELoader.js')
+        ]).then(([THREE, { RGBELoader }]) => {
+            const loader = new RGBELoader();
+            const hdriUrl = `https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/${assetId}_1k.hdr`;
+            loader.load(hdriUrl, (texture) => {
+                texture.mapping = THREE.EquirectangularReflectionMapping;
+                // Dispatch event for shape-builder to pick up
+                window.dispatchEvent(new CustomEvent('aura-apply-hdri', { detail: { texture, name } }));
+                showToastPH('🌍 HDRI "' + name + '" applied to scene!');
+            }, (progress) => {
+                // Loading progress
+            }, (err) => {
+                showToastPH('⚠️ Could not load HDRI — trying fallback...');
+                // Fallback: use thumbnail as basic environment map
+                const tLoader = new THREE.TextureLoader();
+                tLoader.setCrossOrigin('anonymous');
+                tLoader.load(`https://cdn.polyhaven.com/asset_img/primary/${assetId}.png?width=1024`, (tex) => {
+                    tex.mapping = THREE.EquirectangularReflectionMapping;
+                    window.dispatchEvent(new CustomEvent('aura-apply-hdri', { detail: { texture: tex, name } }));
+                    showToastPH('🌍 Environment "' + name + '" applied (preview quality)');
+                });
+            });
+        }).catch((err) => {
+            console.error('HDRI load error:', err);
+            showToastPH('⚠️ Could not load HDRI module');
+        });
+    }
+
+    function showToastPH(msg) {
+        let t = document.querySelector('.sb-toast-wrap');
+        if (!t) { t = document.createElement('div'); t.className = 'sb-toast-wrap'; document.body.appendChild(t); }
+        const toast = document.createElement('div');
+        toast.className = 'sb-toast success';
+        toast.innerHTML = msg;
+        t.appendChild(toast);
+        setTimeout(() => { toast.style.opacity='0'; toast.style.transform='translateX(30px)'; setTimeout(()=>toast.remove(),300); }, 3000);
+    }
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,42 @@
+# ═══════════════════════════════════════════
+# FOSJsRoutingBundle — Expose Symfony Routes to JavaScript
+# Makes Symfony named routes available in JS for AJAX, voice nav, dynamic URLs
+# ═══════════════════════════════════════════
+fos_js_routing:
+    routes_to_expose:
+        # Dashboard
+        - app_user_dashboard
+        # Creative Modules
+        - app_drawing_studio
+        - app_drawing_gallery
+        - app_pixelart_editor
+        - app_pixelart_gallery
+        - app_music_studio
+        - app_music_piano
+        - app_music_guitar
+        - app_music_drums
+        - app_music_beat
+        - app_music_harmony
+        - app_music_rhythm
+        - app_music_recordings
+        - app_music_tracks
+        - app_shapes3d_builder
+        - app_shapes3d_gallery
+        - app_story_index
+        - app_story_new
+        - app_story_show
+        # Community
+        - app_feed_index
+        - app_museum_index
+        - app_museum_submit
+        # AI
+        - app_ai_chat
+        - api_ai_action
+        - api_ai_chat
+        # Account
+        - app_user_profile
+        # Public pages
+        - app_home
+        - app_about
+        - app_services
+        - app_contact

@@ -1,0 +1,145 @@
+{% extends 'base.html.twig' %}
+{% block title %}Submit to Museum — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_museum_index') }}" class="btn btn-ghost">← Museum</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-6h6v6" opacity=".4"/><path d="M3 8h18" opacity=".4"/></svg> Submit to Museum</h1>
+    </div>
+
+    <div class="form-card">
+        <p style="color:var(--text-muted);margin-bottom:var(--space-lg);">
+            Your artwork will be reviewed by AI and automatically approved if it meets quality standards. Upload a cover image to showcase your work!
+        </p>
+
+        {% if hasPending %}
+            <div style="padding:20px;border:2px solid #f59e0b;border-radius:var(--radius-md);background:rgba(245,158,11,0.1);margin-bottom:var(--space-lg);text-align:center;">
+                <p style="font-size:1.3rem;margin-bottom:8px;">⏳ You have a pending submission</p>
+                <p style="color:var(--text-muted);margin-bottom:12px;">
+                    Please wait for your current submission to be reviewed before submitting a new one.
+                </p>
+                <a href="{{ path('app_museum_my_submissions') }}" class="btn btn-primary">📋 View My Submissions</a>
+            </div>
+        {% endif %}
+
+        <form method="post" action="{{ path('app_museum_submit') }}" enctype="multipart/form-data">
+
+            {# ── Cover Image Upload (REQUIRED & PROMINENT) ── #}
+            <div class="form-group" style="margin-bottom:24px;">
+                <label for="image" style="font-size:1rem;font-weight:700;">🖼️ Cover Image *</label>
+                <div id="imageDropZone" style="border:2px dashed var(--border,#444);border-radius:16px;padding:40px 20px;text-align:center;cursor:pointer;transition:all .3s;background:rgba(124,58,237,0.03);margin-top:8px;" onclick="document.getElementById('image').click()">
+                    <div id="imagePreview" style="display:none;margin-bottom:12px;">
+                        <img id="previewImg" src="" alt="Preview" style="max-height:200px;max-width:100%;border-radius:12px;object-fit:contain;">
+                    </div>
+                    <div id="uploadPrompt">
+                        <i data-lucide="upload-cloud" style="width:48px;height:48px;color:var(--accent);opacity:0.5;margin-bottom:8px;display:block;margin:0 auto 8px;"></i>
+                        <p style="font-size:.9rem;color:var(--text-primary,#fff);font-weight:600;margin:0 0 4px;">Click or drag to upload your artwork image</p>
+                        <p style="font-size:.75rem;color:var(--text-muted);margin:0;">This will be the cover image visitors see in the museum gallery</p>
+                    </div>
+                </div>
+                <input type="file" id="image" name="image" accept="image/*" required style="display:none;" onchange="previewImage(this)">
+            </div>
+
+            {# Hidden module pre-selection #}
+            {% if activeModule %}
+                <input type="hidden" name="module_id" value="{{ activeModule.id }}">
+                <div class="form-group">
+                    <label>Module</label>
+                    <div class="form-control" style="background:var(--bg-secondary);cursor:default;">
+                        {{ activeModule.emoji }} {{ activeModule.name }}
+                    </div>
+                </div>
+            {% else %}
+                <div class="form-group">
+                    <label for="module_id">Module</label>
+                    <select id="module_id" name="module_id" class="form-control">
+                        <option value="">— Select a module —</option>
+                        {% for module in modules %}
+                            <option value="{{ module.id }}">{{ module.emoji }} {{ module.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            {% endif %}
+
+            {% if savedWorks is defined and savedWorks|length > 0 %}
+                <div class="form-group" style="padding: 15px; border: 1px solid var(--color-primary); border-radius: var(--radius-md); background: rgba(249, 115, 22, 0.05); margin-bottom: 20px;">
+                    <label for="saved_work_id" style="color: var(--color-primary);">✨ Link a Saved Work from this Module</label>
+                    <select id="saved_work_id" name="saved_work_id" class="form-control" style="border-color: var(--color-primary);">
+                        <option value="">— Select a saved work (optional) —</option>
+                        {% for work in savedWorks %}
+                            <option value="{{ work.id }}">{{ work.title }}</option>
+                        {% endfor %}
+                    </select>
+                    <small style="color: var(--text-muted); display: block; margin-top: 8px;">
+                        The title will be auto-filled. You still need to upload a cover image above.
+                    </small>
+                </div>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="title">Artwork Title *</label>
+                <input type="text" id="title" name="title" class="form-control"
+                       placeholder="Give your artwork a title…" required>
+            </div>
+
+            <div class="form-group">
+                <label for="type">Type</label>
+                <select id="type" name="type" class="form-control">
+                    <option value="drawing" {% if defaultType|default('artwork') == 'drawing' %}selected{% endif %}>🎨 Drawing</option>
+                    <option value="pixel_art" {% if defaultType|default('') == 'pixel_art' %}selected{% endif %}>🕹️ Pixel Art</option>
+                    <option value="story" {% if defaultType|default('') == 'story' %}selected{% endif %}>📚 Story</option>
+                    <option value="3d_shape" {% if defaultType|default('') == '3d_shape' %}selected{% endif %}>🔷 3D Shape</option>
+                    <option value="music" {% if defaultType|default('') == 'music' %}selected{% endif %}>🎵 Music</option>
+                    <option value="artwork" {% if defaultType|default('') == 'artwork' %}selected{% endif %}>✨ Other</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="price">💰 Price (TND) *</label>
+                <input type="number" id="price" name="price" class="form-control"
+                       placeholder="Set your price (e.g. 49.99)" min="0" step="0.01" required>
+                <small style="color:var(--text-muted);">Set the price visitors will see in the museum gallery.</small>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" {% if hasPending %}disabled style="opacity:0.5;cursor:not-allowed;"{% endif %}>🚀 Submit for AI Review</button>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+if (typeof lucide !== 'undefined') lucide.createIcons();
+
+function previewImage(input) {
+    const preview = document.getElementById('imagePreview');
+    const prompt = document.getElementById('uploadPrompt');
+    const img = document.getElementById('previewImg');
+    const zone = document.getElementById('imageDropZone');
+
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            img.src = e.target.result;
+            preview.style.display = 'block';
+            prompt.innerHTML = '<p style="font-size:.8rem;color:#22c55e;font-weight:600;margin:8px 0 0;">✓ Image selected — click to change</p>';
+            zone.style.borderColor = '#22c55e';
+            zone.style.background = 'rgba(34,197,94,0.05)';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+// Drag and drop support
+const dropZone = document.getElementById('imageDropZone');
+['dragenter','dragover'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.style.borderColor='#7c3aed'; dropZone.style.background='rgba(124,58,237,0.08)'; }));
+['dragleave','drop'].forEach(e => dropZone.addEventListener(e, ev => { ev.preventDefault(); dropZone.style.borderColor='var(--border,#444)'; dropZone.style.background='rgba(124,58,237,0.03)'; }));
+dropZone.addEventListener('drop', ev => {
+    ev.preventDefault();
+    const fileInput = document.getElementById('image');
+    fileInput.files = ev.dataTransfer.files;
+    previewImage(fileInput);
+});
+</script>
+{% endblock %}

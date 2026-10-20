@@ -1,0 +1,45 @@
+# ═══════════════════════════════════════════
+# VichUploaderBundle — File Upload Management
+# Handles avatars, artwork images, museum submissions, story covers
+# ═══════════════════════════════════════════
+vich_uploader:
+    db_driver: orm
+    metadata:
+        type: attribute
+
+    mappings:
+        # User avatar uploads
+        user_avatar:
+            uri_prefix: /uploads/avatars
+            upload_destination: '%kernel.project_dir%/public/uploads/avatars'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: true
+            delete_on_update: true
+            delete_on_remove: true
+
+        # Post images (social feed)
+        post_image:
+            uri_prefix: /uploads/posts
+            upload_destination: '%kernel.project_dir%/public/uploads/posts'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: true
+            delete_on_update: true
+            delete_on_remove: true
+
+        # Museum submission artwork
+        museum_artwork:
+            uri_prefix: /uploads/museum
+            upload_destination: '%kernel.project_dir%/public/uploads/museum'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: true
+            delete_on_update: true
+            delete_on_remove: true
+
+        # Story cover images
+        story_cover:
+            uri_prefix: /uploads/stories
+            upload_destination: '%kernel.project_dir%/public/uploads/stories'
+            namer: Vich\UploaderBundle\Naming\SmartUniqueNamer
+            inject_on_load: true
+            delete_on_update: true
+            delete_on_remove: true

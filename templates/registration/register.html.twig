@@ -1,0 +1,65 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Account — VirtuArts{% endblock %}
+
+{% block body %}
+<div class="auth-page">
+    <canvas data-shader class="auth-shader"></canvas>
+    <div class="auth-card auth-card-wide">
+        <div class="auth-header">
+            <span class="auth-icon"><i data-lucide="palette" style="width:48px;height:48px;color:var(--accent);"></i></span>
+            <h1>Join the Community</h1>
+            <p>Create your VirtuArts account and start creating</p>
+        </div>
+
+        {{ form_start(registrationForm, {'attr': {'class': 'auth-form', 'id': 'registerForm'}}) }}
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(registrationForm.firstName) }}
+                    {{ form_widget(registrationForm.firstName) }}
+                    {{ form_errors(registrationForm.firstName) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(registrationForm.lastName) }}
+                    {{ form_widget(registrationForm.lastName) }}
+                    {{ form_errors(registrationForm.lastName) }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                {{ form_label(registrationForm.email) }}
+                {{ form_widget(registrationForm.email) }}
+                {{ form_errors(registrationForm.email) }}
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    {{ form_label(registrationForm.plainPassword) }}
+                    {{ form_widget(registrationForm.plainPassword) }}
+                    {{ form_errors(registrationForm.plainPassword) }}
+                </div>
+                <div class="form-group">
+                    {{ form_label(registrationForm.age) }}
+                    {{ form_widget(registrationForm.age) }}
+                    {{ form_errors(registrationForm.age) }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="registerButton">
+                <i data-lucide="user-plus" class="btn-icon"></i> Create Account
+            </button>
+        {{ form_end(registrationForm) }}
+
+        <div class="auth-footer">
+            <p>Already have an account? <a href="{{ path('app_login') }}">Sign in</a></p>
+            <a href="{{ path('app_home') }}" class="back-link"><i data-lucide="arrow-left" class="btn-icon"></i> Back to Home</a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+</script>
+{% endblock %}

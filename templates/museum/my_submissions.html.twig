@@ -1,0 +1,86 @@
+{% extends 'base.html.twig' %}
+{% block title %}My Museum Submissions — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_user_dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-6h6v6" opacity=".4"/><path d="M3 8h18" opacity=".4"/></svg> My Museum Submissions</h1>
+        <a href="{{ path('app_museum_submit') }}" class="btn btn-primary">+ Submit New Work</a>
+    </div>
+
+    {% if submissions is empty %}
+        <div class="empty-state">
+            <p>You haven't submitted any work yet.</p>
+            <a href="{{ path('app_museum_submit') }}" class="btn btn-primary" style="margin-top:16px;">
+                🏛️ Submit Your First Work
+            </a>
+        </div>
+    {% else %}
+        <div class="gallery-grid">
+            {% for sub in submissions %}
+            <div class="gallery-card">
+                {% if sub.imagePath %}
+                    <img src="{{ sub.imagePath }}" alt="{{ sub.title }}" class="gallery-img">
+                {% else %}
+                    <div class="gallery-img" style="display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:3rem;">📋</span>
+                    </div>
+                {% endif %}
+
+                <div class="gallery-info">
+                    <h3>{{ sub.title ?? 'Untitled' }}</h3>
+                    <p style="font-size:0.8rem;color:var(--text-muted);margin:2px 0;">
+                        📦 {{ sub.module ? sub.module.name : '—' }}
+                        &nbsp;·&nbsp;
+                        🕐 {{ sub.submittedAt ? sub.submittedAt|date('d/m/Y') : '—' }}
+                    </p>
+
+                    {# Status badge #}
+                    {% if sub.isAccepted() %}
+                        <span class="sub-badge sub-accepted">✅ Accepted — In Museum</span>
+                    {% elseif sub.isPending() %}
+                        <span class="sub-badge sub-pending">⏳ Pending Review</span>
+                    {% else %}
+                        <span class="sub-badge sub-refused">❌ Refused</span>
+                        {% if sub.supervisorNote %}
+                            <p style="font-size:0.75rem;color:#991b1b;margin-top:4px;">
+                                💬 {{ sub.supervisorNote }}
+                            </p>
+                        {% endif %}
+                        <a href="{{ path('app_museum_submit', {module: sub.module ? sub.module.id : ''}) }}"
+                           class="btn btn-xs btn-outline" style="margin-top:6px;">🔄 Resubmit</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.sub-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.sub-accepted { background: #d1fae5; color: #065f46; }
+.sub-pending  { background: #fef3c7; color: #92400e; }
+.sub-refused  { background: #fee2e2; color: #991b1b; }
+.btn-xs {
+    padding: 4px 12px;
+    font-size: 0.74rem;
+    border-radius: var(--radius-sm);
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 600;
+}
+</style>
+{% endblock %}

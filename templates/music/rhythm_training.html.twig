@@ -1,0 +1,320 @@
+{% extends 'base.html.twig' %}
+{% block title %}Rhythm Training — VirtuArts{% endblock %}
+
+{% block body %}
+<div class="mus-page">
+<div class="mus-topbar">
+    <a href="{{ path('app_music_studio') }}" class="mus-back">← Acoustic Hub</a>
+    <div class="mus-topbar-title"><span>⏱️</span><span>Rhythm Training</span></div>
+    <div id="levelBadge" class="rt-level-badge">Level 1</div>
+</div>
+
+<div class="rt-wrap">
+
+    {# BPM selector #}
+    <div class="rt-setup">
+        <div class="rt-setup-group">
+            <label>Tempo</label>
+            <div class="rt-bpm-row">
+                <input type="range" id="bpmSlider" min="40" max="160" value="80" class="rt-slider">
+                <span id="bpmLabel" class="rt-bpm-val">80 BPM</span>
+            </div>
+        </div>
+        <div class="rt-setup-group">
+            <label>Mode</label>
+            <div class="rt-mode-row">
+                <button class="rt-mode-btn active" data-mode="quarter">Quarter notes</button>
+                <button class="rt-mode-btn" data-mode="eighth">Eighth notes</button>
+                <button class="rt-mode-btn" data-mode="random">Random</button>
+            </div>
+        </div>
+        <button id="btnStart" class="rt-start-btn">▶ Start Training</button>
+    </div>
+
+    {# Metronome visual #}
+    <div class="rt-metro-wrap">
+        <div class="rt-beat-row" id="beatRow">
+            {% for _ in 1..4 %}<div class="rt-beat-dot"></div>{% endfor %}
+        </div>
+        <div class="rt-metro-label" id="metroLabel">Press Start to begin</div>
+    </div>
+
+    {# Tap zone #}
+    <div class="rt-tap-zone" id="tapZone" tabindex="0">
+        <div class="rt-tap-inner">
+            <div class="rt-tap-icon">👆</div>
+            <div class="rt-tap-text">Tap here (or press <kbd>Space</kbd>)</div>
+        </div>
+        <div class="rt-tap-ripple" id="tapRipple"></div>
+    </div>
+
+    {# Score display #}
+    <div class="rt-score-panel">
+        <div class="rt-score-item">
+            <span class="rt-score-label">Taps</span>
+            <span class="rt-score-val" id="tapCount">0</span>
+        </div>
+        <div class="rt-score-item">
+            <span class="rt-score-label">Accuracy</span>
+            <span class="rt-score-val" id="accuracy">—</span>
+        </div>
+        <div class="rt-score-item">
+            <span class="rt-score-label">Streak</span>
+            <span class="rt-score-val" id="streak">0</span>
+        </div>
+        <div class="rt-score-item">
+            <span class="rt-score-label">Best</span>
+            <span class="rt-score-val" id="bestScore">—</span>
+        </div>
+    </div>
+
+    {# Feedback bar #}
+    <div class="rt-feedback" id="feedback"></div>
+
+    {# Progress bar #}
+    <div class="rt-xp-wrap">
+        <div class="rt-xp-label">XP Progress — Level <span id="levelNum">1</span></div>
+        <div class="rt-xp-bar"><div class="rt-xp-fill" id="xpFill"></div></div>
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.mus-page { background:#0d0d10; min-height:100vh; }
+.mus-topbar { display:flex; align-items:center; gap:16px; padding:14px 28px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.07); }
+.mus-back { color:var(--color-text-muted); text-decoration:none; font-size:.85rem; } .mus-back:hover{color:var(--color-primary);}
+.mus-topbar-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; color:#fff; margin-right:auto; }
+.rt-level-badge { background:linear-gradient(135deg,var(--color-primary),#eab308); color:#fff; font-weight:800; font-size:.8rem; padding:5px 14px; border-radius:999px; }
+
+.rt-wrap { max-width:680px; margin:0 auto; padding:28px 20px; display:flex; flex-direction:column; gap:24px; }
+
+/* Setup */
+.rt-setup { background:#16161c; border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:20px; display:flex; gap:18px; flex-wrap:wrap; align-items:flex-end; }
+.rt-setup-group { display:flex; flex-direction:column; gap:8px; flex:1; min-width:180px; }
+.rt-setup-group label { font-size:.75rem; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--color-text-muted); }
+.rt-bpm-row { display:flex; align-items:center; gap:12px; }
+.rt-slider { flex:1; accent-color:var(--color-primary); }
+.rt-bpm-val { font-size:1rem; font-weight:800; color:var(--color-primary); min-width:70px; }
+.rt-mode-row { display:flex; gap:6px; flex-wrap:wrap; }
+.rt-mode-btn { padding:6px 12px; border-radius:8px; border:1px solid rgba(255,255,255,.1); background:transparent; color:var(--color-text-muted); font-size:.78rem; font-weight:600; cursor:pointer; transition:all .2s; }
+.rt-mode-btn.active { background:rgba(249,115,22,.15); border-color:rgba(249,115,22,.4); color:var(--color-primary); }
+.rt-start-btn { padding:10px 28px; background:var(--color-primary); color:#fff; border:none; border-radius:12px; font-weight:800; font-size:.9rem; cursor:pointer; transition:all .2s; white-space:nowrap; }
+.rt-start-btn:hover { background:var(--color-primary-dark); }
+.rt-start-btn.active { background:#ef4444; }
+
+/* Metronome */
+.rt-metro-wrap { text-align:center; }
+.rt-beat-row { display:flex; justify-content:center; gap:14px; margin-bottom:12px; }
+.rt-beat-dot { width:20px; height:20px; border-radius:50%; background:#2a2a38; border:2px solid rgba(255,255,255,.1); transition:all .1s; }
+.rt-beat-dot.on { background:var(--color-primary); box-shadow:0 0 18px rgba(249,115,22,.6); transform:scale(1.2); }
+.rt-beat-dot.accent { background:#eab308; box-shadow:0 0 20px rgba(234,179,8,.6); transform:scale(1.35); }
+.rt-metro-label { font-size:.82rem; color:var(--color-text-muted); }
+
+/* Tap zone */
+.rt-tap-zone {
+    background: linear-gradient(145deg, #1a1a26, #12121e);
+    border: 2px solid rgba(249,115,22,.25); border-radius:24px;
+    height: 180px; cursor:pointer; user-select:none; outline:none;
+    display:flex; align-items:center; justify-content:center;
+    position:relative; overflow:hidden; transition: border-color .2s;
+}
+.rt-tap-zone:hover { border-color:rgba(249,115,22,.5); }
+.rt-tap-zone:active, .rt-tap-zone.tapped { border-color:var(--color-primary); background:linear-gradient(145deg,#201a10,#18140a); }
+.rt-tap-inner { text-align:center; z-index:1; pointer-events:none; }
+.rt-tap-icon { font-size:2.8rem; margin-bottom:8px; }
+.rt-tap-text { font-size:.85rem; color:var(--color-text-muted); }
+.rt-tap-text kbd { background:#1e1e28; border:1px solid #3a3a48; border-radius:5px; padding:1px 6px; font-size:.75rem; color:#ccc; }
+.rt-tap-ripple {
+    position:absolute; width:100px; height:100px; border-radius:50%;
+    background:rgba(249,115,22,.25); pointer-events:none;
+    transform:scale(0); opacity:0; transition:transform .4s ease-out, opacity .4s ease-out;
+}
+.rt-tap-ripple.active { transform:scale(4); opacity:0; }
+
+/* Score */
+.rt-score-panel { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; }
+.rt-score-item { background:#16161c; border:1px solid rgba(255,255,255,.07); border-radius:12px; padding:14px; text-align:center; }
+.rt-score-label { display:block; font-size:.7rem; text-transform:uppercase; letter-spacing:.1em; color:var(--color-text-muted); margin-bottom:6px; }
+.rt-score-val { display:block; font-size:1.4rem; font-weight:900; color:#fff; }
+
+/* Feedback */
+.rt-feedback { text-align:center; font-size:1.1rem; font-weight:700; min-height:32px; transition:all .2s; }
+.rt-feedback.perfect { color:#22c55e; }
+.rt-feedback.good    { color:#4ade80; }
+.rt-feedback.ok      { color:#fbbf24; }
+.rt-feedback.miss    { color:#ef4444; }
+
+/* XP bar */
+.rt-xp-wrap { display:flex; flex-direction:column; gap:6px; }
+.rt-xp-label { font-size:.75rem; color:var(--color-text-muted); }
+.rt-xp-bar { height:8px; background:#1e1e28; border-radius:999px; overflow:hidden; }
+.rt-xp-fill { height:100%; background:linear-gradient(90deg,var(--color-primary),#eab308); border-radius:999px; width:0%; transition:width .4s ease; }
+</style>
+
+<script>
+(function(){
+'use strict';
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+let bpm = 80, mode = 'quarter', running = false;
+let metroInterval = null, beatIndex = 0;
+let tapCount = 0, streak = 0, bestScore = 0, xp = 0, level = 1;
+let nextBeatTime = null, beatDuration = 0;
+let tapTimes = [];
+
+const dots    = document.querySelectorAll('.rt-beat-dot');
+const tapZone = document.getElementById('tapZone');
+const btnStart= document.getElementById('btnStart');
+const feedback= document.getElementById('feedback');
+
+/* BPM slider */
+document.getElementById('bpmSlider').addEventListener('input', e => {
+  bpm = parseInt(e.target.value);
+  document.getElementById('bpmLabel').textContent = bpm + ' BPM';
+  if (running) restartMetro();
+});
+
+/* Mode buttons */
+document.querySelectorAll('.rt-mode-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.rt-mode-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    mode = btn.dataset.mode;
+  });
+});
+
+/* Start / Stop */
+btnStart.addEventListener('click', () => {
+  running = !running;
+  if (running) {
+    btnStart.textContent = '⏹ Stop';
+    btnStart.classList.add('active');
+    beatIndex = 0; tapTimes = [];
+    document.getElementById('metroLabel').textContent = 'Tap along with the beat!';
+    startMetro();
+  } else {
+    stop();
+  }
+});
+
+function stop() {
+  running = false;
+  clearInterval(metroInterval);
+  btnStart.textContent = '▶ Start Training';
+  btnStart.classList.remove('active');
+  dots.forEach(d => d.classList.remove('on','accent'));
+  document.getElementById('metroLabel').textContent = 'Press Start to begin';
+  feedback.textContent = '';
+  feedback.className = 'rt-feedback';
+}
+
+function startMetro() {
+  const mul = mode === 'eighth' ? 2 : mode === 'random' ? (Math.random() > .5 ? 2 : 1) : 1;
+  beatDuration = (60000 / bpm) / mul;
+  nextBeatTime = Date.now() + beatDuration;
+  playClick(true); // accent on first beat
+  tickDots();
+
+  metroInterval = setInterval(() => {
+    beatIndex = (beatIndex + 1) % 4;
+    const isAccent = beatIndex === 0;
+    playClick(isAccent);
+    tickDots();
+    nextBeatTime = Date.now() + beatDuration;
+
+    if (mode === 'random') {
+      clearInterval(metroInterval);
+      setTimeout(startMetro, beatDuration);
+    }
+  }, beatDuration);
+}
+
+function restartMetro() {
+  clearInterval(metroInterval);
+  startMetro();
+}
+
+function tickDots() {
+  dots.forEach((d, i) => {
+    d.classList.remove('on', 'accent');
+    if (i === beatIndex % 4) {
+      d.classList.add(beatIndex === 0 ? 'accent' : 'on');
+    }
+  });
+}
+
+function playClick(accent) {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  const now = audioCtx.currentTime;
+  const osc = audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.value = accent ? 1000 : 750;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(accent ? 0.5 : 0.3, now);
+  g.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+  osc.connect(g).connect(audioCtx.destination);
+  osc.start(now); osc.stop(now + 0.07);
+}
+
+/* Tap handler */
+function handleTap() {
+  if (!running) return;
+
+  // Ripple animation
+  const ripple = document.getElementById('tapRipple');
+  ripple.style.left = '50%'; ripple.style.top = '50%';
+  ripple.style.transform = 'scale(0)'; ripple.style.opacity = '0.5';
+  ripple.classList.remove('active');
+  void ripple.offsetWidth;
+  ripple.classList.add('active');
+
+  tapZone.classList.add('tapped');
+  setTimeout(() => tapZone.classList.remove('tapped'), 100);
+
+  // Calculate timing accuracy
+  const now = Date.now();
+  tapTimes.push(now);
+  tapCount++;
+  document.getElementById('tapCount').textContent = tapCount;
+
+  // Score based on distance to nearest beat
+  const dist = nextBeatTime - now;
+  const tolerance = beatDuration * 0.35;
+  const absErr = Math.abs(dist);
+  let msg = '', cls = '';
+
+  if (absErr < tolerance * 0.2) { msg='🔥 Perfect!'; cls='perfect'; streak++; xp+=10; }
+  else if (absErr < tolerance * 0.5) { msg='✅ Good!';   cls='good';    streak++; xp+=5; }
+  else if (absErr < tolerance)        { msg='👍 OK';      cls='ok';      streak=0; xp+=2; }
+  else                                { msg='❌ Miss';    cls='miss';    streak=0; }
+
+  const acc = Math.max(0, Math.round(100 - absErr / tolerance * 100));
+  document.getElementById('accuracy').textContent = acc + '%';
+  document.getElementById('streak').textContent   = streak;
+  if (xp > bestScore) { bestScore = xp; document.getElementById('bestScore').textContent = bestScore; }
+
+  feedback.textContent = msg + (streak > 2 ? ` 🔥 ×${streak}` : '');
+  feedback.className = 'rt-feedback ' + cls;
+
+  // Level / XP
+  const levelXP = level * 50;
+  const pct = Math.min(100, (xp % levelXP) / levelXP * 100);
+  document.getElementById('xpFill').style.width = pct + '%';
+  const newLevel = Math.floor(xp / 50) + 1;
+  if (newLevel > level) {
+    level = newLevel;
+    document.getElementById('levelNum').textContent = level;
+    document.getElementById('levelBadge').textContent = 'Level ' + level;
+  }
+}
+
+tapZone.addEventListener('mousedown', handleTap);
+tapZone.addEventListener('touchstart', e => { e.preventDefault(); handleTap(); });
+document.addEventListener('keydown', e => { if (e.code === 'Space') { e.preventDefault(); handleTap(); } });
+})();
+</script>
+{% endblock %}

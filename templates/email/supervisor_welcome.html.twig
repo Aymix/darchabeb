@@ -1,0 +1,49 @@
+{% extends 'email/base_email.html.twig' %}
+
+{% block subject %}Welcome to VirtuArts — Your Supervisor Account{% endblock %}
+
+{% block header %}
+<div class="email-header" style="background: linear-gradient(135deg, #22c55e, #16a34a);">
+    <h1 style="color: #fff;">Welcome, Supervisor!</h1>
+    <p style="color: rgba(255,255,255,0.8);">VirtuArts — Virtual Youth Arts House</p>
+</div>
+{% endblock %}
+
+{% block body %}
+    <p>Hello <strong>{{ user.fullName }}</strong>,</p>
+
+    <p>Congratulations! An administrator has created a <strong>Supervisor</strong> account for you on the VirtuArts platform.</p>
+
+    <p>You can now log in and start managing your assigned module, reviewing submissions, and overseeing user activity.</p>
+
+    <div class="email-info-box">
+        <div class="label">Assigned Module</div>
+        <div class="value">{{ moduleName }}</div>
+    </div>
+
+    <div class="email-divider"></div>
+
+    <p style="font-size: 14px; font-weight: 700; color: #fafaf9; margin-bottom: 12px;">Your Login Credentials</p>
+
+    <div class="email-info-box" style="margin-bottom: 8px;">
+        <div class="label">Email / Username</div>
+        <div class="value">{{ user.email }}</div>
+    </div>
+
+    <div class="email-info-box">
+        <div class="label">Temporary Password</div>
+        <div class="value" style="font-family: monospace; letter-spacing: 2px;">{{ temporaryPassword }}</div>
+    </div>
+
+    <div class="email-warning-box" style="background: rgba(245,158,11,0.08); border-color: rgba(245,158,11,0.25);">
+        <p style="color: #fbbf24; font-size: 13px;">⚠️ For security, please change your password immediately after your first login.</p>
+    </div>
+
+    <div style="text-align: center; margin: 24px 0;">
+        <a href="{{ loginUrl }}" class="email-btn">Sign In to VirtuArts</a>
+    </div>
+
+    <div class="email-divider"></div>
+
+    <p class="text-muted">If you did not expect to receive this email, please contact the platform administrator.</p>
+{% endblock %}

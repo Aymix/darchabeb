@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.MuseumController"
+            prefWidth="1100" prefHeight="700"
+            style="-fx-background-color:#0f0f12;">
+
+    <!-- TOP -->
+    <top>
+        <VBox spacing="10" style="-fx-background-color:#0f0f12;">
+            <padding>
+                <Insets top="16" right="18" bottom="12" left="18"/>
+            </padding>
+
+            <HBox alignment="CENTER_LEFT" spacing="12">
+                <Label text="🏛️ Virtuarts Museum"
+                       style="-fx-text-fill:#f6d24a; -fx-font-size:24px; -fx-font-weight:bold;"/>
+                <Label text="✨ lights • sparks • art"
+                       style="-fx-text-fill:#bdbdbd; -fx-font-size:12px;"/>
+                <Pane HBox.hgrow="ALWAYS"/>
+                <Button text="🔄 Refresh" onAction="#refresh"
+                        style="-fx-background-color:#22232a; -fx-text-fill:#ffffff; -fx-background-radius:14; -fx-font-weight:bold;"/>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_LEFT">
+                <TextField fx:id="searchField" promptText="Search sketch by name or description..."
+                           prefWidth="520"
+                           style="-fx-background-radius:14; -fx-background-color:#1d1e25; -fx-text-fill:#eaeaea; -fx-prompt-text-fill:#8b8b8b;"/>
+                <Button text="🔎 Search" onAction="#search"
+                        style="-fx-background-color:#f6d24a; -fx-font-weight:bold; -fx-background-radius:14;"/>
+                <Label text="👤 User ID:"
+                       style="-fx-text-fill:#bdbdbd; -fx-font-size:12px;"/>
+                <TextField fx:id="userIdField" promptText="1" prefWidth="90"
+                           style="-fx-background-radius:14; -fx-background-color:#1d1e25; -fx-text-fill:#eaeaea; -fx-prompt-text-fill:#8b8b8b;"/>
+                <Label fx:id="msgLabel" text=""
+                       style="-fx-text-fill:#bdbdbd; -fx-font-size:12px;"/>
+            </HBox>
+        </VBox>
+    </top>
+
+    <!-- CENTER: spark layer + content -->
+    <center>
+        <StackPane>
+            <Pane fx:id="sparkLayer" mouseTransparent="true"/>
+            <HBox>
+
+                <!-- LEFT: Cards -->
+                <ScrollPane fitToWidth="true" style="-fx-background:#0f0f12; -fx-background-color:#0f0f12;">
+                    <content>
+                        <TilePane fx:id="tile"
+                                  prefColumns="3"
+                                  hgap="16" vgap="16"
+                                  style="-fx-padding:18;">
+                        </TilePane>
+                    </content>
+                </ScrollPane>
+
+                <!-- RIGHT: Comments panel -->
+                <VBox fx:id="commentsPane" spacing="10"
+                      prefWidth="340"
+                      style="-fx-background-color:#14151b; -fx-border-color:#232533; -fx-border-width:0 0 0 1;">
+                    <padding>
+                        <Insets top="14" right="14" bottom="14" left="14"/>
+                    </padding>
+
+                    <Label fx:id="selectedTitleLabel" text="💬 Comments"
+                           style="-fx-text-fill:#f6d24a; -fx-font-size:16px; -fx-font-weight:bold;"/>
+
+                    <Label fx:id="selectedMetaLabel" text="Select a sketch to see comments."
+                           style="-fx-text-fill:#bdbdbd; -fx-font-size:12px;"/>
+
+                    <ListView fx:id="commentsList"
+                              style="-fx-background-color:#1d1e25; -fx-background-radius:14;"/>
+
+                    <TextArea fx:id="commentField" promptText="Write a nice comment ✨"
+                              prefRowCount="3"
+                              wrapText="true"
+                              style="-fx-background-color:#1d1e25; -fx-text-fill:#eaeaea; -fx-prompt-text-fill:#8b8b8b; -fx-background-radius:14;"/>
+
+                    <Button text="➕ Add Comment" onAction="#addComment"
+                            style="-fx-background-color:#f6d24a; -fx-font-weight:bold; -fx-background-radius:14;"
+                            prefHeight="40"/>
+
+                    <Button text="❌ Close Panel" onAction="#clearSelection"
+                            style="-fx-background-color:#22232a; -fx-text-fill:#ffffff; -fx-background-radius:14;"
+                            prefHeight="40"/>
+                </VBox>
+
+            </HBox>
+        </StackPane>
+    </center>
+
+    <bottom>
+        <HBox spacing="10" style="-fx-padding:12; -fx-background-color:#0f0f12;" alignment="CENTER_LEFT">
+            <Label text="✨ Tip: Hover cards for glow • Click 💬 to open comments • Click ❤️ to like"
+                   style="-fx-text-fill:#7e7e7e; -fx-font-size:12px;"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="🚪 Close" onAction="#closeWindow"
+                    style="-fx-background-color:#22232a; -fx-text-fill:#ffffff; -fx-background-radius:14;"
+                    prefHeight="40"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

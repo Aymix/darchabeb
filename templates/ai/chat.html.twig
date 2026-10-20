@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+{% block title %}VirtuAi — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/ai-chat-page.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="ai-chat-page">
+
+    {# ── AMBIENT GLOWS ── #}
+    <div class="ai-chat-bg">
+        <div class="glow-1"></div>
+        <div class="glow-2"></div>
+        <div class="glow-3"></div>
+    </div>
+
+    {# ── BACK BUTTON ── #}
+    <a href="{{ path('app_user_dashboard') }}" class="ai-back-btn">
+        <i data-lucide="arrow-left"></i>
+        Dashboard
+    </a>
+
+    {# ── MAIN CONTAINER ── #}
+    <div class="ai-chat-container">
+        <div class="ai-chat-content">
+
+            {# ── HEADER ── #}
+            <div class="ai-chat-header">
+                <h1>How can I help today?</h1>
+                <div class="ai-chat-header-line"></div>
+                <p>Type a command or ask VirtuAi anything creative</p>
+            </div>
+
+            {# ── MESSAGES AREA ── #}
+            <div class="ai-chat-messages" id="aiChatMessages" style="display:none;">
+            </div>
+
+            {# ── CHAT INPUT BOX ── #}
+            <div class="ai-chat-box" id="aiChatBox">
+                <div class="focus-ring"></div>
+
+                {# Command palette (hidden by default) #}
+                <div class="ai-command-palette" id="aiCommandPalette" style="display:none;"></div>
+
+                {# Textarea #}
+                <div class="ai-chat-input-wrap">
+                    <textarea
+                        id="aiChatTextarea"
+                        class="ai-chat-textarea"
+                        placeholder="Ask VirtuAi a question..."
+                        rows="1"
+                    ></textarea>
+                </div>
+
+                {# Attachments #}
+                <div class="ai-chat-attachments" id="aiAttachments" style="display:none;"></div>
+
+                {# Hidden file input #}
+                <input type="file" id="aiFileInput" multiple style="display:none;">
+
+                {# Toolbar #}
+                <div class="ai-chat-toolbar">
+                    <div class="ai-chat-toolbar-left">
+                        <button type="button" class="ai-tool-btn" id="aiAttachBtn" title="Attach file">
+                            <i data-lucide="paperclip"></i>
+                        </button>
+                        <button type="button" class="ai-tool-btn" id="aiCmdBtn" title="Commands" data-command-button>
+                            <i data-lucide="command"></i>
+                        </button>
+                    </div>
+
+                    <button type="button" class="ai-send-btn inactive" id="aiChatSend" disabled>
+                        <i data-lucide="send"></i>
+                        <span>Send</span>
+                    </button>
+                </div>
+            </div>
+
+            {# ── SUGGESTION CHIPS ── #}
+            <div class="ai-suggestions">
+                <button class="ai-suggest-btn" data-suggest="Suggest a warm color palette for my drawing">
+                    <i data-lucide="palette"></i>
+                    <span>Color Palette</span>
+                </button>
+                <button class="ai-suggest-btn" data-suggest="Give me a creative story prompt">
+                    <i data-lucide="book-open"></i>
+                    <span>Story Prompt</span>
+                </button>
+                <button class="ai-suggest-btn" data-suggest="Suggest a chord progression for a lo-fi beat">
+                    <i data-lucide="music"></i>
+                    <span>Chord Progression</span>
+                </button>
+                <button class="ai-suggest-btn" data-suggest="Help me build a 3D scene from basic shapes">
+                    <i data-lucide="box"></i>
+                    <span>3D Scene</span>
+                </button>
+                <button class="ai-suggest-btn" data-suggest="What pixel art techniques should I learn?">
+                    <i data-lucide="grid-3x3"></i>
+                    <span>Pixel Tips</span>
+                </button>
+                <button class="ai-suggest-btn" data-suggest="Give me a creative project idea for today">
+                    <i data-lucide="sparkles"></i>
+                    <span>Inspire Me</span>
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    {# ── MOUSE FOLLOWER GLOW ── #}
+    <div class="ai-mouse-glow" id="aiMouseGlow"></div>
+
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+<script src="{{ asset('js/ai-chat-page.js') }}"></script>
+{% endblock %}

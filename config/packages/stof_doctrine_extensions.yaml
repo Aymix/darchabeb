@@ -1,0 +1,12 @@
+# ═══════════════════════════════════════════
+# StofDoctrineExtensionsBundle — Doctrine Behaviors
+# Provides: timestampable, sluggable, sortable
+# Perfect for auto-managing createdAt/updatedAt, URL slugs, chapter ordering
+# ═══════════════════════════════════════════
+stof_doctrine_extensions:
+    default_locale: en_US
+    orm:
+        default:
+            timestampable: true
+            sluggable: true
+            sortable: true

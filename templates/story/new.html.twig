@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+{% block title %}New Story — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/aura-embed.css') }}">
+{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_story_index') }}" class="btn btn-ghost"><i data-lucide="arrow-left" class="btn-icon"></i> Stories</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" opacity=".3"/></svg> New Story</h1>
+    </div>
+
+    <div class="form-card">
+        <form method="post" action="{{ path('app_story_new') }}">
+            <div class="form-group">
+                <label for="title">Story Title</label>
+                <input type="text" id="title" name="title" class="form-control" placeholder="Give your story a title..." required>
+            </div>
+
+            {# ── Multi-Genre Selector ── #}
+            <div class="form-group">
+                <label>Genres <span style="color:var(--text-muted);font-weight:400;">(select 1 or more)</span></label>
+                <div class="genre-selector" id="genreSelector">
+                    {% for genre in genres %}
+                    <label class="genre-chip">
+                        <input type="checkbox" name="genres[]" value="{{ genre.id }}">
+                        <span class="genre-chip-label">{{ genre.name }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+
+                {# Add custom genre #}
+                <div class="add-genre-row" style="margin-top:var(--space-sm);">
+                    <input type="text" id="newGenreName" class="form-control" placeholder="Add a new genre..."
+                           style="flex:1;max-width:250px;">
+                    <button type="button" class="btn btn-outline btn-sm" onclick="addCustomGenre()">
+                        <i data-lucide="plus" style="width:14px;height:14px;"></i> Add Genre
+                    </button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="content">Opening / Synopsis</label>
+                <textarea id="content" name="content" class="form-control" rows="8" placeholder="Write the opening of your story or a synopsis..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg"><i data-lucide="plus-circle" class="btn-icon"></i> Create Story</button>
+        </form>
+    </div>
+
+    {# ━━━ AI WRITING ASSISTANT ━━━ #}
+    <div style="max-width:700px;margin:24px auto 0;padding:0 var(--space-lg);">
+        {% include 'components/_aura_panel.html.twig' with { module: 'story' } %}
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.genre-selector {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px;
+}
+.genre-chip {
+    cursor: pointer; user-select: none;
+}
+.genre-chip input { display: none; }
+.genre-chip-label {
+    display: inline-block; padding: 6px 16px;
+    border-radius: 999px; font-size: 0.82rem; font-weight: 600;
+    background: var(--bg-secondary); color: var(--text-muted);
+    border: 2px solid var(--border); transition: all .2s;
+}
+.genre-chip input:checked + .genre-chip-label {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px rgba(124,58,237,.3);
+}
+.genre-chip-label:hover {
+    border-color: var(--accent); color: var(--accent);
+}
+.add-genre-row {
+    display: flex; gap: 8px; align-items: center;
+}
+</style>
+<script>
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+async function addCustomGenre() {
+    const input = document.getElementById('newGenreName');
+    const name = input.value.trim();
+    if (!name) return;
+
+    try {
+        const res = await fetch('{{ path("app_genre_add") }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: 'name=' + encodeURIComponent(name)
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+
+        // Add the new chip to the selector
+        const selector = document.getElementById('genreSelector');
+        const label = document.createElement('label');
+        label.className = 'genre-chip';
+        label.innerHTML = `<input type="checkbox" name="genres[]" value="${data.id}" checked><span class="genre-chip-label">${data.name}</span>`;
+        selector.appendChild(label);
+        input.value = '';
+    } catch (err) {
+        alert('Failed to add genre. Please try again.');
+    }
+}
+</script>
+<script src="{{ asset('js/aura-embed.js') }}" defer></script>
+{% endblock %}

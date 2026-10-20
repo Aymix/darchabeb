@@ -1,0 +1,261 @@
+{% extends 'base.html.twig' %}
+{% block title %}My Dashboard — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard-3d.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="db3-page">
+    <div class="db3-bg"></div>
+    <div class="db3-container">
+
+        {# ── FLASH MESSAGES ── #}
+        {% for type, messages in app.flashes %}
+        <div class="db3-flash-wrap">
+            {% for msg in messages %}
+            <div class="db3-flash {{ type }}">
+                <i data-lucide="{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'x-circle' : 'alert-triangle') }}"></i>
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        {# ── HEADER ── #}
+        <div class="db3-header">
+            <div class="db3-header-left">
+                <h1>Welcome, {{ app.user.firstName }}!</h1>
+                <p>Your creative hub — explore modules, earn points, and <strong style="color:#f97316;">level up</strong></p>
+            </div>
+            <div class="db3-header-badge">
+                <i data-lucide="palette"></i>
+                ARTIST
+            </div>
+        </div>
+
+        {# ── GAMIFICATION BAR ── #}
+        {% set xpProgress = app.user.xp % 100 %}
+        {% set xpToNext = 100 - xpProgress %}
+        <div class="db3-gam-bar">
+            <div class="db3-gam-item">
+                <span class="db3-gam-label"><i data-lucide="layers"></i> Level</span>
+                <span class="db3-gam-value" style="color:#f97316;">{{ app.user.level }}</span>
+            </div>
+            <div class="db3-gam-item">
+                <span class="db3-gam-label"><i data-lucide="zap"></i> XP</span>
+                <span class="db3-gam-value" style="color:#f59e0b;">{{ app.user.xp }}</span>
+            </div>
+            <div class="db3-gam-item">
+                <span class="db3-gam-label"><i data-lucide="star"></i> Points</span>
+                <span class="db3-gam-value">{{ app.user.points }}</span>
+            </div>
+            <div class="db3-gam-item" style="flex:2;">
+                <span class="db3-gam-label"><i data-lucide="trending-up"></i> Next Level</span>
+                <div style="width:100%;background:rgba(255,255,255,0.06);border-radius:999px;height:10px;overflow:hidden;margin-top:4px;">
+                    <div style="height:100%;width:{{ xpProgress }}%;background:linear-gradient(90deg,#f97316,#f59e0b);border-radius:999px;transition:width 0.6s ease;" title="{{ xpProgress }}/100 XP"></div>
+                </div>
+                <span style="font-size:0.68rem;color:#78716c;margin-top:2px;">{{ xpToNext }} XP to Level {{ app.user.level + 1 }}</span>
+            </div>
+        </div>
+
+        {# ══════════════════════════════════════════
+            MODULE SECTIONS (Visual Arts, Music, etc.)
+        ══════════════════════════════════════════ #}
+        {% set moduleRoutes = {
+            'Drawing Studio':       'app_drawing_studio',
+            'Story Workshop':       'app_story_index',
+            'Pixel Art':            'app_pixelart_editor',
+            'Music Production':     'app_music_beat',
+            'Virtual Museum':       'app_museum_index',
+            'Artist Feed':          'app_feed_index',
+            '3D Shapes':            'app_shapes3d_builder',
+            'Acoustic Music':       'app_music_studio'
+        } %}
+
+        {% set moduleIcons = {
+            'Drawing Studio':   'pen-tool',
+            'Story Workshop':   'book-open',
+            'Pixel Art':        'grid-3x3',
+            'Music Production': 'guitar',
+            'Virtual Museum':   'landmark',
+            'Artist Feed':      'megaphone',
+            '3D Shapes':        'box',
+            'Acoustic Music':   'music'
+        } %}
+
+        {% set sectionDefs = {
+            'Visual Arts':          ['Drawing Studio', 'Pixel Art', '3D Shapes'],
+            'Writing & Literature': ['Story Workshop'],
+            'Audio & Music':        ['Music Production', 'Acoustic Music'],
+            'Social & Display':     ['Virtual Museum', 'Artist Feed']
+        } %}
+
+        {% set sectionIcons = {
+            'Visual Arts':          'palette',
+            'Writing & Literature': 'pen-line',
+            'Audio & Music':        'headphones',
+            'Social & Display':     'globe'
+        } %}
+
+        {% for sectionName, moduleNames in sectionDefs %}
+            {% set sectionModules = [] %}
+            {% for module in modules %}
+                {% if module.name in moduleNames %}
+                    {% set sectionModules = sectionModules|merge([module]) %}
+                {% endif %}
+            {% endfor %}
+
+            {% if sectionModules|length > 0 %}
+            <div class="db3-section-title db3-reveal" style="margin-bottom:20px;">
+                <div class="db3-section-icon"><i data-lucide="{{ sectionIcons[sectionName] }}"></i></div>
+                <h2>{{ sectionName }}</h2>
+                <div class="db3-section-line"></div>
+            </div>
+
+            <div class="db3-module-grid" style="margin-bottom:40px;">
+                {% for module in sectionModules %}
+                {% set route      = moduleRoutes[module.name] ?? null %}
+                {% set iconName   = moduleIcons[module.name] ?? 'box' %}
+                {% set submission = submissionMap[module.id] ?? null %}
+
+                <div class="db3-module-card">
+                    <a href="{{ route ? path(route) : '#' }}" class="db3-module-card-top">
+                        <div class="db3-module-emoji-box">
+                            <i data-lucide="{{ iconName }}"></i>
+                        </div>
+                        <div class="db3-module-name">{{ module.name }}</div>
+                        <div class="db3-module-super">Supervised by {{ module.supervisorName }}</div>
+                        <span class="db3-status {{ module.status|lower == 'active' ? 'active' : 'blocked-mod' }}" style="margin-bottom:10px;">{{ module.status }}</span>
+                        <div class="db3-module-open">
+                            Open <i data-lucide="arrow-right"></i>
+                        </div>
+                    </a>
+                    <div class="db3-module-footer">
+                        {% if submission %}
+                            {% if submission.isAccepted() %}
+                                <span class="db3-status accepted"><i data-lucide="check-circle"></i>In Museum</span>
+                            {% elseif submission.isPending() %}
+                                <span class="db3-status pending"><i data-lucide="clock"></i>Under Review</span>
+                            {% else %}
+                                <span class="db3-status refused"><i data-lucide="x-circle"></i>Refused</span>
+                                {% if submission.supervisorNote %}
+                                    <span title="{{ submission.supervisorNote }}" style="cursor:help;color:#78716c;">
+                                        <i data-lucide="message-square" style="width:14px;height:14px;"></i>
+                                    </span>
+                                {% endif %}
+                                <a href="{{ path('app_museum_submit', {module: module.id}) }}"
+                                   class="db3-btn db3-btn-ghost db3-btn-sm" style="margin-left:auto;">
+                                    <i data-lucide="refresh-cw"></i> Resubmit
+                                </a>
+                            {% endif %}
+                        {% else %}
+                            <a href="{{ path('app_museum_submit', {module: module.id}) }}"
+                               class="db3-btn db3-btn-primary db3-btn-sm" style="width:100%;justify-content:center;">
+                                <i data-lucide="landmark"></i> Submit to Museum
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+        {% endfor %}
+
+        {# ── WEEKLY WORKSHOP SCHEDULE ── #}
+        {% set workshopModules = [] %}
+        {% for module in modules %}
+            {% if module.hasWorkshopSchedule() %}
+                {% set workshopModules = workshopModules|merge([module]) %}
+            {% endif %}
+        {% endfor %}
+
+        {% if workshopModules|length > 0 %}
+        <div class="db3-section-title db3-reveal" style="margin-bottom:20px;">
+            <div class="db3-section-icon"><i data-lucide="calendar-clock"></i></div>
+            <h2>Weekly Workshop Schedule</h2>
+            <div class="db3-section-line"></div>
+        </div>
+
+        <div class="db3-module-grid" style="margin-bottom:40px;">
+            {% for module in workshopModules %}
+            <div class="db3-module-card" style="padding:20px;">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px;">
+                    <div class="db3-module-emoji-box" style="width:40px;height:40px;border-radius:12px;">
+                        <span style="font-size:1.2rem;">{{ module.emoji }}</span>
+                    </div>
+                    <div>
+                        <div class="db3-module-name" style="font-size:0.88rem;">{{ module.name }}</div>
+                        <div class="db3-module-super" style="margin:0;font-size:0.72rem;">{{ module.supervisorName }}</div>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span style="background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.2);color:#f59e0b;padding:4px 10px;border-radius:8px;font-size:0.76rem;font-weight:700;">
+                        📅 {{ module.workshopDay }}
+                    </span>
+                    <span style="background:rgba(249,115,22,0.1);border:1px solid rgba(249,115,22,0.2);color:#f97316;padding:4px 10px;border-radius:8px;font-size:0.76rem;font-weight:700;">
+                        🕐 {{ module.workshopTime }}
+                    </span>
+                </div>
+                {% if module.workshopDescription %}
+                    <p style="font-size:0.78rem;color:#a8a29e;margin:0;line-height:1.4;">{{ module.workshopDescription }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        {# ── QUICK ACTIONS ── #}
+        <div class="db3-section-title db3-reveal">
+            <div class="db3-section-icon"><i data-lucide="zap"></i></div>
+            <h2>Quick Actions</h2>
+            <div class="db3-section-line"></div>
+        </div>
+        <div class="db3-bento-grid">
+            <a href="{{ path('app_drawing_studio') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="pen-tool"></i></div>
+                <span class="db3-bento-label">Start Drawing</span>
+            </a>
+            <a href="{{ path('app_story_new') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="file-pen"></i></div>
+                <span class="db3-bento-label">Write a Story</span>
+            </a>
+            <a href="{{ path('app_feed_new') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="megaphone"></i></div>
+                <span class="db3-bento-label">Share a Post</span>
+            </a>
+            <a href="{{ path('app_pixelart_editor') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="grid-3x3"></i></div>
+                <span class="db3-bento-label">Pixel Art</span>
+            </a>
+            <a href="{{ path('app_music_beat') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="guitar"></i></div>
+                <span class="db3-bento-label">Make Beats</span>
+            </a>
+            <a href="{{ path('app_music_studio') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="music"></i></div>
+                <span class="db3-bento-label">Acoustic Music</span>
+            </a>
+            <a href="{{ path('app_museum_my_submissions') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="landmark"></i></div>
+                <span class="db3-bento-label">My Submissions</span>
+            </a>
+            <a href="{{ path('app_ai_chat') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="sparkles"></i></div>
+                <span class="db3-bento-label">VirtuAi Chat</span>
+            </a>
+        </div>
+
+    </div>{# /db3-container #}
+</div>{# /db3-page #}
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="{{ asset('js/dashboard-3d.js') }}"></script>
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+{% endblock %}

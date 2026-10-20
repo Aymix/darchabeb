@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<VBox xmlns="http://javafx.com/javafx"
+      xmlns:fx="http://javafx.com/fxml"
+      fx:controller="gui.SaveDialogController"
+      spacing="12" style="-fx-padding: 16;"
+      prefWidth="420">
+
+    <Label text="Save Drawing" style="-fx-font-size: 16px; -fx-font-weight: bold;"/>
+
+    <TextField fx:id="titleField" promptText="Title"/>
+    <TextArea fx:id="descField" promptText="Description" prefRowCount="4"/>
+    <TextField fx:id="userIdField" promptText="User ID (int)"/>
+
+    <HBox spacing="10" alignment="CENTER_RIGHT">
+        <Button text="💾 Save" onAction="#saveToDatabase"/>
+        <Button text="🚀 Submit Sketch" onAction="#submitSketch"
+                style="-fx-background-color:#f6d24a; -fx-font-weight:bold; -fx-background-radius:14;"/>
+        <Button text="🖼 Export PNG" onAction="#exportPng"/>
+        <Button text="Close" onAction="#close"/>
+    </HBox>
+
+    <Label fx:id="msgLabel" text=""/>
+</VBox>

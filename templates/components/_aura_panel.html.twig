@@ -1,0 +1,80 @@
+{# ══════════════════════════════════════════════
+   VIRTUAI — Advanced Embedded Module Assistant Panel
+   Include with: {% include 'components/_aura_panel.html.twig' with { module: '3d_studio' } %}
+   ══════════════════════════════════════════════ #}
+
+{% set module_labels = {
+    '3d_studio': '🧊 3D Creation Studio',
+    'drawing':   '🎨 Drawing Studio',
+    'pixel_art': '🕹️ Pixel Art Editor',
+    'music':     '🎵 Music Production',
+    'story':     '✍️ Story Workshop',
+    'museum':    '🏛️ Virtual Museum',
+    'feed':      '📰 Artist Feed',
+    'general':   '✨ Creative Hub',
+} %}
+
+{% set module_placeholders = {
+    '3d_studio': 'Ask about materials, lighting, scene composition…',
+    'drawing':   'Ask about colors, palettes, shading techniques…',
+    'pixel_art': 'Draw something, create a palette, sprite ideas…',
+    'music':     'Create beats, chord progressions, music theory…',
+    'story':     'Write stories, develop characters, plot twists…',
+    'museum':    'Explore art history, styles, techniques…',
+    'feed':      'Creative ideas, post inspiration, community…',
+    'general':   'Ask me anything creative — I can build, draw, compose & write!',
+} %}
+
+{% set module_suggestions = {
+    '3d_studio': ['Build a scene 🏗️', 'Material palette 🎨', 'Lighting setup 💡', 'Creative challenge 🏆'],
+    'drawing':   ['Color palette 🎨', 'Composition tips 📐', 'Drawing prompt ✏️', 'Give me feedback 💡'],
+    'pixel_art': ['Draw a heart ❤️', 'Retro palette 🕹️', 'Sprite idea 👾', 'Pixel challenge 🏆'],
+    'music':     ['Lo-Fi beat 🎧', 'Pop progression 🎵', 'Jazz chords 🎹', 'Beat challenge 🏆'],
+    'story':     ['Write a story ✨', 'Plot twist 🔀', 'Character flaw 💔', 'Writing challenge 🏆'],
+    'museum':    ['Art history 🎨', 'Style analysis 🔍', 'Famous artists 👤', 'Creative challenge 🏆'],
+    'feed':      ['Post idea 💡', 'Creative prompt ✨', 'Get inspired 🚀', 'What should I make? 🤔'],
+    'general':   ['Surprise me! ✨', 'Creative challenge 🏆', 'What can you do? 🤖', 'Cross-module project 🎯'],
+} %}
+
+<div class="aura-embed" id="auraEmbed" data-module="{{ module|default('general') }}">
+    <div class="aura-embed-header">
+        <div class="aura-embed-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+            </svg>
+        </div>
+        <div class="aura-embed-title">
+            <span class="aura-embed-name">VirtuAi <span class="aura-embed-badge">AI</span></span>
+            <span class="aura-embed-sub">{{ module_labels[module|default('general')]|default('✨ Creative Hub') }}</span>
+        </div>
+        <button class="aura-embed-toggle" id="auraEmbedToggle" title="Collapse / Expand">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        </button>
+    </div>
+
+    <div class="aura-embed-body" id="auraEmbedBody">
+        {# Quick Suggestions #}
+        <div class="aura-embed-chips" id="auraEmbedChips">
+            {% for chip in module_suggestions[module|default('general')]|default([]) %}
+                <button class="aura-embed-chip" data-aura-suggest="{{ chip }}">{{ chip }}</button>
+            {% endfor %}
+        </div>
+
+        {# Messages area #}
+        <div class="aura-embed-messages" id="auraEmbedMessages">
+            <div class="aura-embed-welcome">
+                <span>✨</span> Hey! I'm <strong>VirtuAi</strong> — your AI creative partner. I don't just talk — I <strong>build, draw, compose & write</strong> directly in your workspace. Try me!
+            </div>
+        </div>
+
+        {# Input row #}
+        <div class="aura-embed-input-row">
+            <textarea class="aura-embed-input" id="auraEmbedInput" placeholder="{{ module_placeholders[module|default('general')]|default('Ask me anything creative…') }}" rows="1"></textarea>
+            <button class="aura-embed-send" id="auraEmbedSend" aria-label="Send">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>

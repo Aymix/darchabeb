@@ -1,0 +1,101 @@
+{% extends 'base.html.twig' %}
+{% block title %}Platform Modules — VirtuArts Admin{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard-3d.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="db3-page">
+    <div class="db3-bg"></div>
+    <div class="db3-container">
+
+        {# ── FLASH MESSAGES ── #}
+        {% for type, messages in app.flashes %}
+        <div class="db3-flash-wrap">
+            {% for msg in messages %}
+            <div class="db3-flash {{ type }}">
+                <i data-lucide="{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'x-circle' : 'alert-triangle') }}"></i>
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        {# ── HEADER ── #}
+        <div class="db3-header">
+            <div class="db3-header-left">
+                <h1>Platform Modules</h1>
+                <p>Manage all activity modules on the VirtuArts platform</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+                <a href="{{ path('app_admin_dashboard') }}" class="db3-btn db3-btn-ghost">
+                    <i data-lucide="arrow-left"></i> Dashboard
+                </a>
+                <a href="{{ path('app_admin_module_create') }}" class="db3-btn db3-btn-primary">
+                    <i data-lucide="plus"></i> Add Module
+                </a>
+            </div>
+        </div>
+
+        {# ── MODULES TABLE ── #}
+        {% if modules is empty %}
+            <div class="db3-empty"><i data-lucide="package"></i><p>No modules found.</p></div>
+        {% else %}
+        <div class="db3-table-wrap">
+            <table class="db3-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Icon</th>
+                        <th>Module Name</th>
+                        <th>Supervisor</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for module in modules %}
+                <tr style="{{ module.isActive ? '' : 'opacity:0.55;' }}">
+                    <td class="td-dim">#{{ module.id }}</td>
+                    <td style="font-size:1.5rem;">{{ module.emoji }}</td>
+                    <td class="td-bold">{{ module.name }}</td>
+                    <td>{{ module.supervisorName }}</td>
+                    <td>
+                        <span class="db3-status {{ module.isActive ? 'active' : 'blocked-mod' }}">
+                            {{ module.status }}
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:6px;align-items:center;">
+                            <a href="{{ path('app_admin_module_edit', {id: module.id}) }}" class="db3-btn db3-btn-primary db3-btn-sm">
+                                <i data-lucide="pencil"></i> Edit
+                            </a>
+                            <form method="post" action="{{ path('app_admin_module_delete', {id: module.id}) }}"
+                                  onsubmit="return confirm('Delete this module permanently?');" style="margin:0;">
+                                <button type="submit" class="db3-btn db3-btn-danger db3-btn-sm">
+                                    <i data-lucide="trash-2"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="{{ asset('js/dashboard-3d.js') }}"></script>
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+</script>
+{% endblock %}

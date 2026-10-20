@@ -1,0 +1,254 @@
+{% extends 'base.html.twig' %}
+{% block title %}Admin Control Panel — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/dashboard-3d.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="db3-page">
+    <div class="db3-bg"></div>
+    <div class="db3-container">
+
+        {# ── FLASH MESSAGES ── #}
+        {% for type, messages in app.flashes %}
+        <div class="db3-flash-wrap">
+            {% for msg in messages %}
+            <div class="db3-flash {{ type }}">
+                <i data-lucide="{{ type == 'success' ? 'check-circle' : (type == 'error' ? 'x-circle' : 'alert-triangle') }}"></i>
+                {{ msg }}
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        {# ── HEADER ── #}
+        <div class="db3-header">
+            <div class="db3-header-left">
+                <h1>Admin Control Panel</h1>
+                <p>Welcome back, <strong style="color:#f97316;">{{ app.user.firstName }}</strong> — here's your platform overview.</p>
+            </div>
+            <div class="db3-header-badge">
+                <i data-lucide="shield-check"></i>
+                ADMIN
+            </div>
+        </div>
+
+        {# ── STAT CARDS ── #}
+        <div class="db3-stats">
+            <div class="db3-stat-card">
+                <div class="db3-stat-icon"><i data-lucide="users"></i></div>
+                <div class="db3-stat-value" data-count="{{ totalUsers }}">{{ totalUsers }}</div>
+                <div class="db3-stat-label">Total Users</div>
+            </div>
+            <div class="db3-stat-card">
+                <div class="db3-stat-icon"><i data-lucide="layers"></i></div>
+                <div class="db3-stat-value warning" data-count="{{ activeModules }}">{{ activeModules }}</div>
+                <div class="db3-stat-label">Active Modules</div>
+            </div>
+            <div class="db3-stat-card">
+                <div class="db3-stat-icon"><i data-lucide="shield"></i></div>
+                <div class="db3-stat-value" data-count="{{ supervisorCount }}">{{ supervisorCount }}</div>
+                <div class="db3-stat-label">Supervisors</div>
+            </div>
+            <div class="db3-stat-card">
+                <div class="db3-stat-icon"><i data-lucide="activity"></i></div>
+                <div class="db3-stat-value success">100%</div>
+                <div class="db3-stat-label">System Health</div>
+            </div>
+        </div>
+
+        {# ── QUICK ACTIONS ── #}
+        <div class="db3-section-title db3-reveal">
+            <div class="db3-section-icon"><i data-lucide="zap"></i></div>
+            <h2>Quick Actions</h2>
+            <div class="db3-section-line"></div>
+        </div>
+        <div class="db3-bento-grid" style="margin-bottom:48px;">
+            <a href="{{ path('app_admin_users') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="users"></i></div>
+                <span class="db3-bento-label">Manage Users</span>
+            </a>
+            <a href="{{ path('app_admin_modules') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="settings"></i></div>
+                <span class="db3-bento-label">Platform Modules</span>
+            </a>
+            <a href="{{ path('app_supervisor_dashboard') }}" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="layout-dashboard"></i></div>
+                <span class="db3-bento-label">Supervisor View</span>
+            </a>
+            <a href="#create-user" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="user-plus"></i></div>
+                <span class="db3-bento-label">Add User / Admin</span>
+            </a>
+            <a href="#create-supervisor" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="shield-plus"></i></div>
+                <span class="db3-bento-label">Add Supervisor</span>
+            </a>
+            <a href="#" class="db3-bento-card">
+                <div class="db3-bento-icon"><i data-lucide="activity"></i></div>
+                <span class="db3-bento-label">System Logs</span>
+            </a>
+        </div>
+
+        {# ══════════════════════════════════════
+           CREATE USER / ADMIN
+        ══════════════════════════════════════ #}
+        <div id="create-user" class="db3-section-title db3-reveal">
+            <div class="db3-section-icon"><i data-lucide="user-plus"></i></div>
+            <h2>Create User or Admin Account</h2>
+            <div class="db3-section-line"></div>
+        </div>
+        <p style="color:#78716c;font-size:0.85rem;margin:-12px 0 20px;" class="db3-reveal">
+            Choose the role: <strong style="color:#d6d3d1;">User</strong> for a regular artist account,
+            or <strong style="color:#a78bfa;">Admin</strong> for a platform administrator.
+        </p>
+        <div class="db3-form-card" style="margin-bottom:48px;">
+            <form method="post" action="{{ path('app_admin_create_user') }}" id="createUserForm">
+                <div class="db3-form-row">
+                    <div class="db3-form-group">
+                        <label><i data-lucide="user"></i> First Name</label>
+                        <input type="text" name="first_name" required placeholder="e.g. Alex" minlength="2" maxlength="30">
+                    </div>
+                    <div class="db3-form-group">
+                        <label><i data-lucide="user"></i> Last Name</label>
+                        <input type="text" name="last_name" required placeholder="e.g. Martin" minlength="2" maxlength="30">
+                    </div>
+                </div>
+                <div class="db3-form-row">
+                    <div class="db3-form-group">
+                        <label><i data-lucide="mail"></i> Email Address</label>
+                        <input type="email" name="email" required placeholder="user@example.com">
+                    </div>
+                    <div class="db3-form-group">
+                        <label><i data-lucide="lock"></i> Password</label>
+                        <input type="password" name="password" required placeholder="Min. 6 characters" minlength="6">
+                    </div>
+                </div>
+                <div class="db3-form-row">
+                    <div class="db3-form-group">
+                        <label><i data-lucide="calendar"></i> Age</label>
+                        <input type="number" name="age" value="18" min="5" max="100" placeholder="18">
+                    </div>
+                    <div class="db3-form-group">
+                        <label><i data-lucide="shield"></i> Role</label>
+                        <select name="role" id="userRoleSelect">
+                            <option value="USER">User — Regular Artist</option>
+                            <option value="ADMIN">Admin — Platform Administrator</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="submit" class="db3-btn db3-btn-primary">
+                        <i data-lucide="user-check"></i> Create Account
+                    </button>
+                    <span style="font-size:0.78rem;color:#57534e;">Account will be active immediately after creation.</span>
+                </div>
+            </form>
+        </div>
+
+        {# ══════════════════════════════════════
+           CREATE SUPERVISOR (with email)
+        ══════════════════════════════════════ #}
+        <div id="create-supervisor" class="db3-section-title db3-reveal">
+            <div class="db3-section-icon"><i data-lucide="shield-plus"></i></div>
+            <h2>Create Supervisor Account</h2>
+            <div class="db3-section-line"></div>
+        </div>
+        <p style="color:#78716c;font-size:0.85rem;margin:-12px 0 20px;" class="db3-reveal">
+            A welcome email with login credentials &amp; assigned module will be sent automatically.
+        </p>
+        <div class="db3-form-card" style="margin-bottom:48px;">
+            <form method="post" action="{{ path('app_admin_create_supervisor') }}" id="createSupForm">
+                <div class="db3-form-row">
+                    <div class="db3-form-group">
+                        <label><i data-lucide="user"></i> First Name</label>
+                        <input type="text" name="first_name" required placeholder="e.g. Sarah" minlength="2" maxlength="30">
+                    </div>
+                    <div class="db3-form-group">
+                        <label><i data-lucide="user"></i> Last Name</label>
+                        <input type="text" name="last_name" required placeholder="e.g. Johnson" minlength="2" maxlength="30">
+                    </div>
+                </div>
+                <div class="db3-form-row">
+                    <div class="db3-form-group">
+                        <label><i data-lucide="mail"></i> Email Address</label>
+                        <input type="email" name="email" required placeholder="supervisor@example.com">
+                    </div>
+                    <div class="db3-form-group">
+                        <label><i data-lucide="boxes"></i> Assigned Module</label>
+                        <select name="module_id">
+                            <option value="">— General (No specific module) —</option>
+                            {% for mod in modules %}
+                            <option value="{{ mod.id }}">{{ mod.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-top:8px;">
+                    <button type="submit" class="db3-btn db3-btn-primary">
+                        <i data-lucide="send"></i> Create &amp; Send Email
+                    </button>
+                    <span style="font-size:0.78rem;color:#57534e;">A secure temporary password will be generated and emailed.</span>
+                </div>
+            </form>
+        </div>
+
+        {# ── RECENT SUBMISSIONS ── #}
+        {% if recentSubmissions|length > 0 %}
+        <div class="db3-section-title db3-reveal">
+            <div class="db3-section-icon"><i data-lucide="scroll-text"></i></div>
+            <h2>Recent Submissions</h2>
+            <div class="db3-section-line"></div>
+        </div>
+        <div class="db3-table-wrap db3-reveal">
+            <table class="db3-table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>User</th>
+                        <th>Module</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for sub in recentSubmissions %}
+                    <tr>
+                        <td class="td-dim">{{ sub.id }}</td>
+                        <td class="td-bold">{{ sub.title ?? '—' }}</td>
+                        <td>{{ sub.user ? sub.user.fullName : '—' }}</td>
+                        <td>{{ sub.module ? sub.module.name : '—' }}</td>
+                        <td><span class="db3-status {{ sub.status|lower }}">{{ sub.status }}</span></td>
+                        <td class="td-dim">{{ sub.submittedAt ? sub.submittedAt|date('d/m/Y') : '—' }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+    </div>{# /db3-container #}
+</div>{# /db3-page #}
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="{{ asset('js/dashboard-3d.js') }}"></script>
+<script>
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+
+    /* Highlight role selection visually */
+    const roleSelect = document.getElementById('userRoleSelect');
+    if (roleSelect) {
+        const updateRoleColor = () => {
+            roleSelect.style.color = roleSelect.value === 'ADMIN' ? '#a78bfa' : '#f5f5f4';
+        };
+        roleSelect.addEventListener('change', updateRoleColor);
+        updateRoleColor();
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="gui.GalleryController"
+            style="-fx-background-color:#1c1c1c;"
+            prefWidth="820" prefHeight="520">
+
+    <top>
+        <ToolBar style="-fx-background-color:#1c1c1c;">
+            <Label text="Virtuarts • Gallery"
+                   style="-fx-text-fill:#f6d24a; -fx-font-size: 18px; -fx-font-weight: bold;"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+            <Button text="Refresh" onAction="#refresh"
+                    style="-fx-background-color:#2d2d2d; -fx-text-fill:#eaeaea;"/>
+        </ToolBar>
+    </top>
+
+    <center>
+        <TableView fx:id="table" style="-fx-background-color:#2a2a2a;">
+            <columns>
+                <TableColumn fx:id="idCol" text="ID" prefWidth="90"/>
+                <TableColumn fx:id="titleCol" text="Title" prefWidth="260"/>
+                <TableColumn fx:id="dateCol" text="Created At" prefWidth="160"/>
+                <TableColumn fx:id="userCol" text="User ID" prefWidth="120"/>
+            </columns>
+        </TableView>
+    </center>
+
+    <!-- BOTTOM BAR WITH DELETE -->
+    <bottom>
+        <HBox spacing="10" style="-fx-padding: 12; -fx-background-color:#1c1c1c;" alignment="CENTER_LEFT">
+            <Label fx:id="msgLabel" text=""
+                   style="-fx-text-fill:#cfcfcf;"/>
+            <Pane HBox.hgrow="ALWAYS"/>
+
+            <Button text="Delete Selected" onAction="#deleteSelected"
+                    style="-fx-background-color:#b93838; -fx-text-fill:white; -fx-font-weight:bold; -fx-background-radius: 12;"
+                    prefHeight="40"/>
+
+            <Button text="Close" onAction="#closeWindow"
+                    style="-fx-background-color:#2d2d2d; -fx-text-fill:#eaeaea; -fx-background-radius: 12;"
+                    prefHeight="40"/>
+        </HBox>
+    </bottom>
+
+</BorderPane>

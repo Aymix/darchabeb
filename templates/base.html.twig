@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta name="description" content="VirtuArts — Virtual Youth Arts House. A creative hub for drawing, writing, music, and collaborative storytelling.">
+        <title>{% block title %}VirtuArts{% endblock %}</title>
+        <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><defs><linearGradient id=%22g%22 x1=%220%22 y1=%220%22 x2=%221%22 y2=%221%22><stop offset=%220%25%22 stop-color=%22%237c3aed%22/><stop offset=%22100%25%22 stop-color=%22%2306b6d4%22/></linearGradient></defs><text y=%22.9em%22 font-size=%2290%22 fill=%22url(%23g)%22>V</text></svg>">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+        {# Lucide Icons CDN — professional SVG icon library #}
+        <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+        {% block stylesheets %}
+            <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        {% endblock %}
+        {% block javascripts %}
+            {% block importmap %}{{ importmap('app') }}{% endblock %}
+        {% endblock %}
+    </head>
+    <body>
+        {# ── NAVBAR ── #}
+        <nav class="navbar" id="mainNavbar">
+            <div class="navbar-inner">
+                <a href="{{ path('app_home') }}" class="navbar-brand" id="brandLogo">
+                    <span class="brand-logo-3d">
+                        <span class="brand-cube">
+                            <span class="cube-face cube-front">V</span>
+                            <span class="cube-face cube-back">A</span>
+                            <span class="cube-face cube-top">V</span>
+                            <span class="cube-face cube-bottom">A</span>
+                            <span class="cube-face cube-left">V</span>
+                            <span class="cube-face cube-right">A</span>
+                        </span>
+                    </span>
+                    <span class="brand-text">Virtu<strong>Arts</strong></span>
+                </a>
+
+
+
+                <div class="navbar-actions">
+                    {% if app.user %}
+                        <div class="user-badge">
+                            <span class="user-avatar">
+                                {% if app.user.avatarPath %}
+                                    <img src="{{ app.user.avatarPath }}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                                {% else %}
+                                    {{ app.user.firstName|slice(0,1)|upper }}
+                                {% endif %}
+                            </span>
+                            <span class="user-name">{{ app.user.displayOrFullName }}</span>
+                        </div>
+                        <a href="{{ path('app_ai_chat') }}" class="btn btn-sm btn-ghost"><i data-lucide="sparkles" class="btn-icon"></i> VirtuAi</a>
+                        <a href="{{ path('app_user_profile') }}" class="btn btn-sm btn-ghost"><i data-lucide="settings" class="btn-icon"></i> Profile</a>
+                        {% if is_granted('ROLE_ADMIN') %}
+                            <a href="{{ path('app_admin_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                        {% elseif is_granted('ROLE_SUPERVISOR') %}
+                            <a href="{{ path('app_supervisor_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                        {% else %}
+                            <a href="{{ path('app_user_dashboard') }}" class="btn btn-sm btn-ghost"><i data-lucide="layout-dashboard" class="btn-icon"></i> Dashboard</a>
+                        {% endif %}
+                        <a href="{{ path('app_logout') }}" class="btn btn-sm btn-outline"><i data-lucide="log-out" class="btn-icon"></i> Sign Out</a>
+                    {% else %}
+                        <a href="{{ path('app_museum_index') }}" class="btn btn-sm btn-ghost"><i data-lucide="landmark" class="btn-icon"></i> Museum</a>
+                        <a href="{{ path('app_login') }}" class="btn btn-sm btn-ghost"><i data-lucide="log-in" class="btn-icon"></i> Sign In</a>
+                        <a href="{{ path('app_register') }}" class="btn btn-sm btn-primary"><i data-lucide="user-plus" class="btn-icon"></i> Join Now</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+
+        {# ── FLASH MESSAGES ── #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                {% if label != 'new_user' %}
+                <div class="flash-message flash-{{ label }}" role="alert" style="position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:9999;">
+                    <span>{{ message }}</span>
+                    <button class="flash-close" onclick="this.parentElement.remove()">&times;</button>
+                </div>
+                {% endif %}
+            {% endfor %}
+        {% endfor %}
+
+        {# ── MAIN CONTENT ── #}
+        <main class="main-content">
+            {% block body %}{% endblock %}
+        </main>
+
+        {# ── FOOTER ── #}
+        <footer class="footer">
+            <div class="footer-inner">
+                <div class="footer-brand">
+                    <span class="brand-logo-3d brand-logo-3d-sm">
+                        <span class="brand-cube">
+                            <span class="cube-face cube-front">V</span>
+                            <span class="cube-face cube-back">A</span>
+                            <span class="cube-face cube-top">V</span>
+                            <span class="cube-face cube-bottom">A</span>
+                            <span class="cube-face cube-left">V</span>
+                            <span class="cube-face cube-right">A</span>
+                        </span>
+                    </span>
+                    <span>Virtu<strong>Arts</strong></span>
+                    <p class="footer-tagline">Virtual Youth Arts House</p>
+                </div>
+                <div class="footer-links">
+                    <a href="{{ path('app_about') }}">About</a>
+                    <a href="{{ path('app_services') }}">Services</a>
+                    <a href="{{ path('app_contact') }}">Contact</a>
+                </div>
+                <div class="footer-copy">
+                    &copy; {{ "now"|date("Y") }} VirtuArts. All rights reserved.
+                </div>
+            </div>
+        </footer>
+
+        {# ── SCRIPTS ── #}
+        <script src="{{ asset('js/shader.js') }}"></script>
+        <script>
+            // Initialize Lucide icons
+            if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+            // Auto-dismiss flash messages
+            document.querySelectorAll('.flash-message').forEach(el => {
+                setTimeout(() => { el.style.opacity = '0'; setTimeout(() => el.remove(), 400); }, 5000);
+            });
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                document.getElementById('mainNavbar')?.classList.toggle('scrolled', window.scrollY > 20);
+            });
+        </script>
+        {% block page_scripts %}{% endblock %}
+
+        {# ── Voice Navigation (logged-in users) ── #}
+        {% if app.user %}
+            <script src="{{ asset('js/voice-nav.js') }}" defer></script>
+        {% endif %}
+
+    </body>
+</html>

@@ -1,0 +1,335 @@
+{% extends 'base.html.twig' %}
+{% block title %}Grand Piano — VirtuArts{% endblock %}
+
+{% block body %}
+<div class="mus-page">
+<div class="mus-topbar">
+    <a href="{{ path('app_music_studio') }}" class="mus-back">← Acoustic Hub</a>
+    <div class="mus-topbar-title"><span>🎹</span><span>Grand Piano</span></div>
+    <div id="statusMsg" class="mus-status"></div>
+</div>
+
+<div class="instr-wrap">
+    {# Controls bar #}
+    <div class="instr-controls">
+        <div class="instr-hints">Click the keys or use keyboard <kbd>A S D F G H J K L</kbd> to play. Hit <kbd>R</kbd> to record.</div>
+        <div class="instr-actions">
+            <button id="btnRecord"  class="instr-btn instr-btn-record">⏺ Record</button>
+            <button id="btnPlay"    class="instr-btn instr-btn-play" disabled>▶ Play back</button>
+            <button id="btnSave"    class="instr-btn instr-btn-save" disabled>💾 Save</button>
+        </div>
+    </div>
+
+    {# AI feedback bar #}
+    <div id="aiFeedback" class="ai-feedback-bar" style="display:none;">
+        <span class="ai-label">🤖 AI</span>
+        <span id="aiText">—</span>
+    </div>
+
+    {# Piano keyboard #}
+    <div class="piano-stage">
+        <div class="piano-keyboard" id="pianoKeyboard"></div>
+    </div>
+
+    {# Info bar #}
+    <div class="instr-info-bar">
+        <span style="color:var(--color-text-muted);font-size:.85rem;">Notes played:</span>
+        <span id="notesPlayed" class="notes-log">—</span>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+/* ── Base ── */
+.mus-page { background:#0d0d10; min-height:100vh; }
+.mus-topbar { display:flex; align-items:center; gap:16px; padding:14px 28px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.07); }
+.mus-back { color:var(--color-text-muted); text-decoration:none; font-size:.85rem; }
+.mus-back:hover { color:var(--color-primary); }
+.mus-topbar-title { display:flex; align-items:center; gap:10px; font-size:1.2rem; font-weight:800; color:#fff; margin-right:auto; }
+.mus-status { font-size:.8rem; color:var(--color-primary); font-weight:600; }
+
+/* ── Instrument wrapper ── */
+.instr-wrap { padding:28px 32px; display:flex; flex-direction:column; gap:18px; }
+.instr-controls { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.instr-hints { font-size:.85rem; color:var(--color-text-muted); }
+.instr-hints kbd { background:#1e1e28; border:1px solid #3a3a48; border-radius:5px; padding:2px 7px; font-size:.8rem; color:#ccc; }
+.instr-actions { display:flex; gap:10px; }
+.instr-btn { padding:8px 18px; border:none; border-radius:999px; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s; }
+.instr-btn-record { background:rgba(249,115,22,.15); color:var(--color-primary); border:1px solid rgba(249,115,22,.4); }
+.instr-btn-record.recording { background:var(--color-primary); color:#fff; animation:recPulse 1s infinite; }
+.instr-btn-play { background:rgba(34,197,94,.12); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+.instr-btn-play:disabled { opacity:.4; cursor:not-allowed; }
+.instr-btn-save { background:rgba(59,130,246,.12); color:#60a5fa; border:1px solid rgba(59,130,246,.3); }
+.instr-btn-save:disabled { opacity:.4; cursor:not-allowed; }
+@keyframes recPulse { 0%,100%{opacity:1} 50%{opacity:.6} }
+
+/* ── AI bar ── */
+.ai-feedback-bar { background:rgba(34,197,94,.08); border:1px solid rgba(34,197,94,.2); border-radius:12px; padding:10px 16px; display:flex; align-items:center; gap:12px; font-size:.85rem; color:#d1fae5; }
+.ai-label { background:rgba(34,197,94,.2); border-radius:999px; padding:2px 10px; font-weight:700; font-size:.75rem; color:#4ade80; }
+
+/* ── Piano stage ── */
+.piano-stage { display:flex; justify-content:center; padding:12px 0; }
+.piano-keyboard { position:relative; display:flex; gap:3px; background:#111; padding:16px 16px 0; border-radius:16px 16px 6px 6px; box-shadow:0 12px 40px rgba(0,0,0,.8), inset 0 2px 6px rgba(255,255,255,.05); }
+
+/* White keys */
+.key-white {
+    width: 54px; height: 200px;
+    background: linear-gradient(180deg, #f8f8f8 0%, #e8e8e8 100%);
+    border: 1px solid #bbb;
+    border-radius: 0 0 8px 8px;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: flex-end;
+    padding-bottom: 12px;
+    cursor: pointer; user-select: none;
+    position: relative; transition: all .06s;
+    box-shadow: 0 4px 8px rgba(0,0,0,.4), inset 0 1px 2px rgba(255,255,255,.8);
+}
+.key-white:active, .key-white.pressed {
+    background: linear-gradient(180deg, #ffe4b5 0%, #ffd090 100%);
+    transform: translateY(3px);
+    box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.key-note { font-size:.7rem; font-weight:700; color:#888; letter-spacing:.04em; }
+.key-shortcut { font-size:.65rem; color:#bbb; margin-top:2px; }
+
+/* Black keys */
+.key-black {
+    width: 34px; height: 126px;
+    background: linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%);
+    border-radius: 0 0 6px 6px;
+    position: absolute; top: 16px; z-index: 2;
+    cursor: pointer; user-select: none; transition: all .06s;
+    box-shadow: 0 6px 12px rgba(0,0,0,.8), inset 0 1px 1px rgba(255,255,255,.1);
+    display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8px;
+}
+.key-black:active, .key-black.pressed {
+    background: linear-gradient(180deg, #3a2000 0%, #2a1800 100%);
+    transform: translateY(3px);
+}
+.key-black .key-note { color: #666; font-size: .6rem; }
+
+/* Info bar */
+.instr-info-bar { background:#111116; border:1px solid rgba(255,255,255,.07); border-radius:10px; padding:10px 16px; font-size:.82rem; color:#fff; display:flex; gap:10px; flex-wrap:wrap; align-items:center; min-height:40px; }
+.notes-log { color:var(--color-primary); font-weight:600; font-family:monospace; }
+</style>
+
+<script>
+(function() {
+'use strict';
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+/* ── Note definitions ── */
+const NOTES = [
+  { note:'C',  freq:261.63, key:'a', sharp:false },
+  { note:'C#', freq:277.18, key:null,short:true  },
+  { note:'D',  freq:293.66, key:'s', sharp:false },
+  { note:'D#', freq:311.13, key:null,sharp:true  },
+  { note:'E',  freq:329.63, key:'d', sharp:false },
+  { note:'F',  freq:349.23, key:'f', sharp:false },
+  { note:'F#', freq:369.99, key:null,sharp:true  },
+  { note:'G',  freq:392.00, key:'g', sharp:false },
+  { note:'G#', freq:415.30, key:null,sharp:true  },
+  { note:'A',  freq:440.00, key:'h', sharp:false },
+  { note:'A#', freq:466.16, key:null,sharp:true  },
+  { note:'B',  freq:493.88, key:'j', sharp:false },
+  { note:'C2', freq:523.25, key:'k', sharp:false },
+  { note:'C2#',freq:554.37, key:null,sharp:true  },
+  { note:'D2', freq:587.33, key:'l', sharp:false },
+];
+
+const WHITES = NOTES.filter(n => !n.sharp);
+const BLACKS = NOTES.filter(n =>  n.sharp);
+const KEY_MAP = {};
+NOTES.filter(n=>n.key).forEach(n => KEY_MAP[n.key] = n);
+
+/* ── Build keyboard ── */
+const keyboard = document.getElementById('pianoKeyboard');
+const keyEls = {};
+let whiteCount = 0;
+
+WHITES.forEach((n, wi) => {
+  const el = document.createElement('div');
+  el.className = 'key-white';
+  el.innerHTML = `<span class="key-note">${n.note}</span>${n.key ? `<span class="key-shortcut">${n.key.toUpperCase()}</span>` : ''}`;
+  el.dataset.note = n.note;
+  el.addEventListener('mousedown', () => playNote(n));
+  keyboard.appendChild(el);
+  keyEls[n.note] = el;
+  whiteCount++;
+});
+
+/* Position black keys */
+const whiteEls = [...keyboard.querySelectorAll('.key-white')];
+const blackOffsets = { 'C#':0, 'D#':1, 'F#':3, 'G#':4, 'A#':5, 'C2#':7 };
+BLACKS.forEach(n => {
+  const idx = blackOffsets[n.note];
+  if (idx === undefined) return;
+  const ref = whiteEls[idx];
+  if (!ref) return;
+  const el = document.createElement('div');
+  el.className = 'key-black';
+  el.dataset.note = n.note;
+  el.innerHTML = `<span class="key-note">${n.note}</span>`;
+  const left = ref.offsetLeft + ref.offsetWidth - 18;
+  el.style.left = left + 'px';
+  el.addEventListener('mousedown', () => playNote(n));
+  keyboard.appendChild(el);
+  keyEls[n.note] = el;
+});
+
+/* ── Audio synthesis (piano-like) ── */
+function playNote(n) {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  const now = audioCtx.currentTime;
+  const gain = audioCtx.createGain();
+  gain.gain.setValueAtTime(0.4, now);
+  gain.gain.exponentialRampToValueAtTime(0.001, now + 1.8);
+
+  // Combine 3 oscillators for richer tone
+  [1, 2, 3].forEach((harmonic, i) => {
+    const osc = audioCtx.createOscillator();
+    osc.type = i === 0 ? 'triangle' : 'sine';
+    osc.frequency.value = n.freq * harmonic;
+    const hGain = audioCtx.createGain();
+    hGain.gain.value = i === 0 ? 0.6 : i === 1 ? 0.25 : 0.1;
+    osc.connect(hGain).connect(gain).connect(audioCtx.destination);
+    osc.start(now);
+    osc.stop(now + 2);
+  });
+
+  flashKey(n.note);
+  logNote(n.note);
+  if (isRecording) captureNote(n.note);
+  analyzeAI(n.note);
+}
+
+function flashKey(note) {
+  const el = keyEls[note];
+  if (!el) return;
+  el.classList.add('pressed');
+  setTimeout(() => el.classList.remove('pressed'), 160);
+}
+
+/* ── Note log ── */
+let notesArr = [];
+function logNote(note) {
+  notesArr.push(note);
+  if (notesArr.length > 14) notesArr.shift();
+  document.getElementById('notesPlayed').textContent = notesArr.join(' ');
+}
+
+/* ── Keyboard input ── */
+const heldKeys = new Set();
+document.addEventListener('keydown', e => {
+  const k = e.key.toLowerCase();
+  if (k === 'r') { toggleRecord(); return; }
+  if (heldKeys.has(k)) return;
+  heldKeys.add(k);
+  if (KEY_MAP[k]) playNote(KEY_MAP[k]);
+});
+document.addEventListener('keyup', e => heldKeys.delete(e.key.toLowerCase()));
+
+/* ── Recording ── */
+let isRecording = false, recStart = 0, recEvents = [];
+const btnRecord = document.getElementById('btnRecord');
+const btnPlay   = document.getElementById('btnPlay');
+const btnSave   = document.getElementById('btnSave');
+
+function toggleRecord() {
+  isRecording = !isRecording;
+  if (isRecording) {
+    recStart = Date.now();
+    recEvents = [];
+    btnRecord.textContent = '⏹ Stop';
+    btnRecord.classList.add('recording');
+    setStatus('🔴 Recording…');
+  } else {
+    btnRecord.textContent = '⏺ Record';
+    btnRecord.classList.remove('recording');
+    if (recEvents.length > 0) {
+      btnPlay.disabled = false;
+      btnSave.disabled = false;
+      setStatus(`✅ Recorded ${recEvents.length} notes`);
+    } else {
+      setStatus('');
+    }
+  }
+}
+btnRecord.addEventListener('click', toggleRecord);
+
+function captureNote(note) {
+  recEvents.push({ note, t: Date.now() - recStart });
+}
+
+/* ── Playback ── */
+btnPlay.addEventListener('click', () => {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  setStatus('▶ Replaying…');
+  recEvents.forEach(ev => {
+    setTimeout(() => {
+      const n = NOTES.find(x => x.note === ev.note);
+      if (n) { playNote(n); }
+    }, ev.t);
+  });
+  const dur = recEvents[recEvents.length - 1]?.t ?? 0;
+  setTimeout(() => setStatus(''), dur + 500);
+});
+
+/* ── Save (AJAX) ── */
+btnSave.addEventListener('click', async () => {
+  const dur = Math.round((recEvents[recEvents.length-1]?.t ?? 0) / 1000);
+  const res = await fetch('{{ path('app_music_recording_save') }}', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ instrument:'piano', title: null, data: recEvents, duration: dur })
+  });
+  const json = await res.json();
+  if (json.success) {
+    setStatus('💾 Saved as #' + json.id);
+    btnSave.disabled = true;
+  }
+});
+
+/* ── AI Note/Key Feedback ── */
+const KEY_SIGNATURES = {
+  'C Major':  ['C','D','E','F','G','A','B'],
+  'G Major':  ['G','A','B','C','D','E','F#'],
+  'D Major':  ['D','E','F#','G','A','B','C#'],
+  'A Major':  ['A','B','C#','D','E','F#','G#'],
+  'F Major':  ['F','G','A','A#','C','D','E'],
+  'A Minor':  ['A','B','C','D','E','F','G'],
+  'D Minor':  ['D','E','F','G','A','A#','C'],
+  'E Minor':  ['E','F#','G','A','B','C','D'],
+};
+const aiBar = document.getElementById('aiFeedback');
+const aiText = document.getElementById('aiText');
+let aiTimer = null;
+
+function analyzeAI(note) {
+  aiBar.style.display = 'flex';
+  clearTimeout(aiTimer);
+  aiTimer = setTimeout(() => {
+    const played = notesArr.slice(-6).map(n => n.replace(/[0-9]/g,''));
+    let best = null, bestScore = -1;
+    for (const [key, scale] of Object.entries(KEY_SIGNATURES)) {
+      const score = played.filter(n => scale.some(s => s.startsWith(n))).length;
+      if (score > bestScore) { bestScore = score; best = key; }
+    }
+    aiText.textContent = bestScore >= 3
+      ? `Notes suggest 🎵 ${best} — try adding: ${getNextNote(best, played)}`
+      : `Keep playing to detect key…`;
+  }, 600);
+}
+function getNextNote(key, played) {
+  const scale = KEY_SIGNATURES[key] || [];
+  const missing = scale.filter(n => !played.some(p => n.startsWith(p)));
+  return missing.slice(0, 3).join(', ') || '—';
+}
+
+function setStatus(msg) { document.getElementById('statusMsg').textContent = msg; }
+})();
+</script>
+{% endblock %}

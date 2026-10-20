@@ -1,0 +1,259 @@
+{% extends 'base.html.twig' %}
+{% block title %}Harmony Assistant — VirtuArts{% endblock %}
+
+{% block body %}
+<div class="mus-page">
+<div class="mus-topbar">
+    <a href="{{ path('app_music_studio') }}" class="mus-back">← Acoustic Hub</a>
+    <div class="mus-topbar-title"><span>🎼</span><span>Harmony Assistant <span style="font-size:.75rem;color:var(--color-primary);background:rgba(249,115,22,.15);border-radius:999px;padding:2px 10px;margin-left:6px;">AI</span></span></div>
+</div>
+
+<div class="harm-wrap">
+    <p class="harm-desc">Enter your melody notes (e.g. <code>C, E, G, A</code>), pick a scale, and the assistant will suggest the best matching chords and a typical I–V–vi–IV progression.</p>
+
+    {# Input panel #}
+    <div class="harm-form">
+        <div class="harm-field">
+            <label>Melody notes</label>
+            <input type="text" id="melodyNotes" class="harm-input" placeholder="C, E, G, A">
+        </div>
+        <div class="harm-field">
+            <label>Scale</label>
+            <select id="scaleSelect" class="harm-input">
+                <option value="C_MAJOR">C MAJOR</option>
+                <option value="G_MAJOR">G MAJOR</option>
+                <option value="D_MAJOR">D MAJOR</option>
+                <option value="A_MAJOR">A MAJOR</option>
+                <option value="F_MAJOR">F MAJOR</option>
+                <option value="A_MINOR">A MINOR</option>
+                <option value="D_MINOR">D MINOR</option>
+                <option value="E_MINOR">E MINOR</option>
+            </select>
+        </div>
+        <div class="harm-field">
+            <label>Progression length</label>
+            <input type="number" id="progLen" class="harm-input" value="8" min="4" max="16">
+        </div>
+        <button id="btnAnalyze" class="harm-analyze-btn">Analyze ✨</button>
+    </div>
+
+    {# Results #}
+    <div id="harmResults" class="harm-results" style="display:none;">
+        <div class="harm-block">
+            <div class="harm-block-title">🎹 Matching Chords</div>
+            <div id="matchingChords" class="harm-chips"></div>
+        </div>
+        <div class="harm-block">
+            <div class="harm-block-title">📊 Suggested Progression</div>
+            <div id="progression" class="harm-prog-row"></div>
+        </div>
+        <div class="harm-block">
+            <div class="harm-block-title">🎵 Play Progression</div>
+            <div class="harm-play-bar">
+                <button id="btnPlayProg" class="instr-btn instr-btn-play">▶ Play</button>
+                <div id="progStatus" class="harm-prog-status"></div>
+            </div>
+        </div>
+        <div class="harm-block">
+            <div class="harm-block-title">💡 AI Suggestions</div>
+            <div id="aiSuggestions" class="harm-suggestions"></div>
+        </div>
+    </div>
+</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.mus-page { background:#0d0d10; min-height:100vh; }
+.mus-topbar { display:flex; align-items:center; gap:16px; padding:14px 28px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.07); }
+.mus-back { color:var(--color-text-muted); text-decoration:none; font-size:.85rem; } .mus-back:hover{color:var(--color-primary);}
+.mus-topbar-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; color:#fff; }
+.harm-wrap { max-width:780px; margin:0 auto; padding:32px 24px; display:flex; flex-direction:column; gap:28px; }
+.harm-desc { color:var(--color-text-muted); font-size:.9rem; line-height:1.7; }
+.harm-desc code { background:rgba(249,115,22,.12); color:var(--color-primary); padding:1px 6px; border-radius:4px; }
+
+.harm-form { display:flex; gap:14px; flex-wrap:wrap; align-items:flex-end; }
+.harm-field { display:flex; flex-direction:column; gap:6px; flex:1; min-width:160px; }
+.harm-field label { font-size:.78rem; font-weight:700; color:var(--color-text-muted); text-transform:uppercase; letter-spacing:.08em; }
+.harm-input {
+    background:#1a1a22; border:1px solid rgba(255,255,255,.1); border-radius:12px;
+    color:#fff; padding:10px 14px; font-size:.9rem; outline:none;
+    transition: border-color .2s;
+}
+.harm-input:focus { border-color:rgba(249,115,22,.5); }
+select.harm-input { appearance:none; cursor:pointer; }
+.harm-analyze-btn {
+    padding:11px 28px; background:var(--color-primary); color:#fff; border:none;
+    border-radius:12px; font-weight:800; font-size:.9rem; cursor:pointer; transition:all .2s;
+    white-space:nowrap;
+}
+.harm-analyze-btn:hover { background:var(--color-primary-dark); transform:translateY(-1px); box-shadow:0 6px 20px rgba(249,115,22,.3); }
+
+.harm-results { display:flex; flex-direction:column; gap:20px; }
+.harm-block { background:#16161c; border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:20px; }
+.harm-block-title { font-size:.75rem; font-weight:800; text-transform:uppercase; letter-spacing:.1em; color:var(--color-primary); margin-bottom:14px; }
+.harm-chips { display:flex; gap:8px; flex-wrap:wrap; }
+.harm-chip {
+    padding:8px 18px; border-radius:999px;
+    background:rgba(249,115,22,.1); border:1px solid rgba(249,115,22,.25);
+    color:#fdba74; font-weight:700; font-size:.85rem; cursor:pointer;
+    transition: all .2s;
+}
+.harm-chip:hover { background:rgba(249,115,22,.25); transform:translateY(-1px); }
+.harm-chip.highlight { background:rgba(249,115,22,.3); border-color:var(--color-primary); color:#fff; }
+
+.harm-prog-row { display:flex; gap:10px; flex-wrap:wrap; }
+.prog-step {
+    min-width:60px; padding:14px 10px; border-radius:12px; text-align:center;
+    background:#1e1e2a; border:1px solid rgba(255,255,255,.1);
+    font-size:.9rem; font-weight:700; color:#fff; cursor:pointer; transition:all .15s;
+}
+.prog-step .prog-roman { font-size:.65rem; color:var(--color-text-muted); display:block; margin-top:3px; }
+.prog-step:hover { border-color:rgba(249,115,22,.4); }
+.prog-step.playing { background:rgba(249,115,22,.2); border-color:var(--color-primary); box-shadow:0 0 20px rgba(249,115,22,.3); }
+
+.harm-play-bar { display:flex; align-items:center; gap:14px; }
+.instr-btn { padding:9px 20px; border:none; border-radius:999px; font-size:.82rem; font-weight:700; cursor:pointer; transition:all .2s; }
+.instr-btn-play { background:rgba(34,197,94,.12); color:#4ade80; border:1px solid rgba(34,197,94,.3); }
+.harm-prog-status { font-size:.82rem; color:var(--color-text-muted); }
+
+.harm-suggestions { display:flex; flex-direction:column; gap:10px; }
+.harm-tip {
+    background:rgba(59,130,246,.07); border:1px solid rgba(59,130,246,.2);
+    border-radius:10px; padding:10px 14px; font-size:.85rem; color:#bfdbfe; line-height:1.6;
+}
+.harm-tip strong { color:#93c5fd; }
+</style>
+
+<script>
+(function(){
+'use strict';
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+/* ── Scale definitions ── */
+const SCALES = {
+  C_MAJOR: { notes:['C','D','E','F','G','A','B'],   chords:['C','Dm','Em','F','G','Am','Bdim'],  romans:['I','ii','iii','IV','V','vi','vii°'] },
+  G_MAJOR: { notes:['G','A','B','C','D','E','F#'],  chords:['G','Am','Bm','C','D','Em','F#dim'], romans:['I','ii','iii','IV','V','vi','vii°'] },
+  D_MAJOR: { notes:['D','E','F#','G','A','B','C#'], chords:['D','Em','F#m','G','A','Bm','C#dim'],romans:['I','ii','iii','IV','V','vi','vii°'] },
+  A_MAJOR: { notes:['A','B','C#','D','E','F#','G#'],chords:['A','Bm','C#m','D','E','F#m','G#dim'],romans:['I','ii','iii','IV','V','vi','vii°'] },
+  F_MAJOR: { notes:['F','G','A','Bb','C','D','E'],  chords:['F','Gm','Am','Bb','C','Dm','Edim'],  romans:['I','ii','iii','IV','V','vi','vii°'] },
+  A_MINOR: { notes:['A','B','C','D','E','F','G'],   chords:['Am','Bdim','C','Dm','Em','F','G'],   romans:['i','ii°','III','iv','v','VI','VII'] },
+  D_MINOR: { notes:['D','E','F','G','A','Bb','C'],  chords:['Dm','Edim','F','Gm','Am','Bb','C'],  romans:['i','ii°','III','iv','v','VI','VII'] },
+  E_MINOR: { notes:['E','F#','G','A','B','C','D'],  chords:['Em','F#dim','G','Am','Bm','C','D'],  romans:['i','ii°','III','iv','v','VI','VII'] },
+};
+
+/* Chord freq map (simplified) */
+const CHORD_FREQS = {
+  'C':[261.63,329.63,392.00],'Dm':[293.66,349.23,440.00],'Em':[329.63,392.00,493.88],
+  'F':[349.23,440.00,523.25],'G':[196.00,246.94,293.66],'Am':[220.00,261.63,329.63],
+  'Bdim':[246.94,293.66,349.23],'D':[293.66,369.99,440.00],'E':[164.81,207.65,246.94],
+  'A':[220.00,277.18,329.63],'Bm':[246.94,293.66,369.99],'Bb':[233.08,293.66,349.23],
+  'Gm':[196.00,233.08,293.66],
+};
+
+const PROGRESSIONS = [
+  [0,4,5,3], // I-V-vi-IV
+  [0,3,4,3], // I-IV-V-IV
+  [5,3,0,4], // vi-IV-I-V
+  [0,2,3,4], // I-iii-IV-V
+];
+
+document.getElementById('btnAnalyze').addEventListener('click', analyze);
+
+let currentScale = null, currentProg = [];
+
+function analyze() {
+  const raw = document.getElementById('melodyNotes').value;
+  const scaleKey = document.getElementById('scaleSelect').value;
+  const len = parseInt(document.getElementById('progLen').value) || 8;
+  const scale = SCALES[scaleKey];
+  currentScale = scale;
+
+  const inputNotes = raw.split(',').map(n => n.trim().toUpperCase()).filter(Boolean);
+  const matchedChords = scale.chords.filter((ch, i) =>
+    inputNotes.some(n => scale.notes[i]?.startsWith(n))
+  );
+  const displaying = matchedChords.length ? matchedChords : scale.chords.slice(0, 4);
+
+  // Build chord chips
+  const chipsEl = document.getElementById('matchingChords');
+  chipsEl.innerHTML = '';
+  scale.chords.forEach((ch, i) => {
+    const chip = document.createElement('div');
+    chip.className = 'harm-chip' + (displaying.includes(ch) ? ' highlight' : '');
+    chip.textContent = `${scale.romans[i]} — ${ch}`;
+    chip.addEventListener('click', () => playChord(ch));
+    chipsEl.appendChild(chip);
+  });
+
+  // Build progression
+  const progPat = PROGRESSIONS[Math.floor(Math.random() * PROGRESSIONS.length)];
+  currentProg = [];
+  const progRow = document.getElementById('progression');
+  progRow.innerHTML = '';
+  for (let i = 0; i < len; i++) {
+    const idx = progPat[i % progPat.length];
+    const ch  = scale.chords[idx];
+    const rom = scale.romans[idx];
+    currentProg.push(ch);
+    const step = document.createElement('div');
+    step.className = 'prog-step';
+    step.innerHTML = `${ch}<span class="prog-roman">${rom}</span>`;
+    step.addEventListener('click', () => playChord(ch));
+    progRow.appendChild(step);
+  }
+
+  // AI tips
+  const tips = [
+    `<strong>Key detected:</strong> You're likely in ${scaleKey.replace('_',' ')}. The tonic chord (${scale.chords[0]}) is your home base.`,
+    `<strong>Tip:</strong> The I–V–vi–IV progression works in almost any genre. Try adding a 7th to the V chord for color.`,
+    `<strong>Tempo suggestion:</strong> For a balanced feel, try 80–120 BPM with 4/4 time signature.`,
+    `<strong>Note feedback:</strong> ${inputNotes.length > 0 ? `Your notes (${inputNotes.join(', ')}) fit naturally into ${scale.chords.slice(0,3).join(', ')}.` : 'Enter melody notes above for personalized suggestions.'}`,
+  ];
+  document.getElementById('aiSuggestions').innerHTML = tips.map(t => `<div class="harm-tip">💡 ${t}</div>`).join('');
+
+  document.getElementById('harmResults').style.display = 'flex';
+}
+
+/* Play a chord */
+function playChord(name) {
+  if (!audioCtx) audioCtx = new AudioCtx();
+  const freqs = CHORD_FREQS[name] || [261.63, 329.63, 392.00];
+  freqs.forEach((f, i) => {
+    setTimeout(() => {
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.value = f;
+      const g = audioCtx.createGain();
+      g.gain.setValueAtTime(0.2, now);
+      g.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+      osc.connect(g).connect(audioCtx.destination);
+      osc.start(now); osc.stop(now + 1.2);
+    }, i * 40);
+  });
+}
+
+/* Play full progression */
+document.getElementById('btnPlayProg').addEventListener('click', () => {
+  if (!currentProg.length) return;
+  const status = document.getElementById('progStatus');
+  const steps = document.querySelectorAll('.prog-step');
+  const interval = 800;
+  currentProg.forEach((ch, i) => {
+    setTimeout(() => {
+      steps.forEach(s => s.classList.remove('playing'));
+      if (steps[i]) steps[i].classList.add('playing');
+      playChord(ch);
+      status.textContent = `Playing: ${ch}`;
+      if (i === currentProg.length - 1) {
+        setTimeout(() => { steps.forEach(s=>s.classList.remove('playing')); status.textContent=''; }, interval);
+      }
+    }, i * interval);
+  });
+});
+})();
+</script>
+{% endblock %}

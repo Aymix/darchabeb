@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+{% block title %}VirtuArts — Enter the Creative Universe{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/homepage-cinematic.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="cin-page" id="cinPage">
+
+    <div class="cin-loader" id="cinLoader">
+        <div class="cin-loader-ring"></div>
+        <div class="cin-loader-text">Entering Universe</div>
+    </div>
+
+    <div class="cin-progress" id="cinProgress"></div>
+    <div class="cin-cursor" id="cinCursor"></div>
+
+    {# ── Fixed WebGL Canvas ── #}
+    <div class="cin-canvas-wrap"><canvas id="cinCanvas"></canvas></div>
+
+    {# ── SCENE 0: Hero ── #}
+    <div class="cin-overlay" id="overlayHero">
+        <div class="cin-overlay-text" id="textHero">
+            <h1 class="cin-title">
+                <span>Create.</span><span>Collaborate.</span><span>Inspire.</span>
+            </h1>
+            <p class="cin-subtitle">Step through the portal into a living digital universe where artists draw, compose, write, and build together.</p>
+        </div>
+    </div>
+
+    {# ── SCENE 1: The Door ── #}
+    <div class="cin-overlay" id="overlayDoor">
+        <div class="cin-overlay-text" id="textDoor">
+            <div class="cin-scene-label">The Gateway</div>
+            <div class="cin-scene-title">Enter the Unknown</div>
+        </div>
+    </div>
+
+    {# ── SCENE 2: Music ── #}
+    <div class="cin-overlay" id="overlayMusic">
+        <div class="cin-overlay-text" id="textMusic">
+            <div class="cin-scene-label">♪ Music Dimension</div>
+            <div class="cin-scene-title">Feel the Rhythm</div>
+            <div class="cin-scene-desc">Compose beats, record acoustic tracks, and let sound become visible energy.</div>
+        </div>
+    </div>
+
+    {# ── SCENE 3: Drawing ── #}
+    <div class="cin-overlay" id="overlayDraw">
+        <div class="cin-overlay-text" id="textDraw">
+            <div class="cin-scene-label">✦ Drawing Dimension</div>
+            <div class="cin-scene-title">Paint the Void</div>
+            <div class="cin-scene-desc">Multi-layer canvases. Brushes that breathe. Colors that explode.</div>
+        </div>
+    </div>
+
+    {# ── SCENE 4: Writing ── #}
+    <div class="cin-overlay" id="overlayWrite">
+        <div class="cin-overlay-text" id="textWrite">
+            <div class="cin-scene-label">❯ Writing Dimension</div>
+            <div class="cin-scene-title">Words Take Flight</div>
+            <div class="cin-scene-desc">Collaborative stories and entire universes written into existence.</div>
+        </div>
+    </div>
+
+    {# ── SCENE 5: 3D ── #}
+    <div class="cin-overlay" id="overlay3D">
+        <div class="cin-overlay-text" id="text3D">
+            <div class="cin-scene-label">◈ 3D Dimension</div>
+            <div class="cin-scene-title">Shape Reality</div>
+            <div class="cin-scene-desc">Sculpt wireframes, explode polygons, build procedural geometry.</div>
+        </div>
+    </div>
+
+    {# ── SCENE 6: VirtuAi ── #}
+    <div class="cin-overlay" id="overlayAura">
+        <div class="cin-overlay-text" id="textAura">
+            <div class="cin-scene-label">✧ Entering the Mind</div>
+            <div class="cin-scene-title">Meet VirtuAi</div>
+            <div class="cin-scene-desc">She sees every studio. She controls every tool. She thinks alongside you.</div>
+        </div>
+    </div>
+
+    {# ── FLOATING HERO IMAGES ── #}
+    <div class="cin-hero-images">
+        <img src="{{ asset('images/hero/music-note.png') }}" class="cin-float-img" id="floatMusic" alt="">
+        <img src="{{ asset('images/hero/brush.png') }}" class="cin-float-img" id="floatBrush" alt="">
+        <img src="{{ asset('images/hero/palette.png') }}" class="cin-float-img" id="floatPalette" alt="">
+        <img src="{{ asset('images/hero/pen.png') }}" class="cin-float-img" id="floatPen" alt="">
+        <img src="{{ asset('images/hero/gamepad.png') }}" class="cin-float-img" id="floatGamepad" alt="">
+    </div>
+
+    {# ── SCENE 7: Video Monolith ── #}
+    <div class="cin-video-wrap" id="videoWrap">
+        <div class="cin-video-frame" id="videoFrame">
+            <video id="cinVideo" preload="metadata" playsinline muted>
+                <source src="{{ asset('images/Create Collaborate.mp4') }}" type="video/mp4">
+            </video>
+            <div class="cin-video-play" id="videoPlay">
+                <div class="cin-video-play-icon">▶</div>
+                <div class="cin-video-play-label">Watch the Vision</div>
+            </div>
+        </div>
+    </div>
+
+    {# ── SCENE 8: Final CTA ── #}
+    <div class="cin-final-cta" id="finalCTA">
+        <div class="cin-final-tagline">Your imagination deserves a universe.</div>
+        {% if app.user %}
+            <a href="{{ path('app_user_dashboard') }}" class="cin-enter-btn" id="enterBtn">✦ Enter Your Dashboard</a>
+        {% else %}
+            <a href="{{ path('app_register') }}" class="cin-enter-btn" id="enterBtn">✦ Enter VirtuArts</a>
+        {% endif %}
+    </div>
+
+    <div class="cin-scroll-cue" id="scrollCue">
+        <span>Scroll to explore</span>
+        <div class="cin-scroll-line"></div>
+    </div>
+
+    <div class="cin-scroll-spacer" id="scrollSpacer"></div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="{{ asset('js/homepage-scene.js') }}"></script>
+<script src="{{ asset('js/homepage-anim.js') }}"></script>
+{% endblock %}

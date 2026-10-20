@@ -1,0 +1,179 @@
+{% extends 'base.html.twig' %}
+{% block title %}Story Workshop — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_user_dashboard') }}" class="btn btn-ghost"><i data-lucide="arrow-left" class="btn-icon"></i> Dashboard</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/><path d="M8 7h8" opacity=".4"/><path d="M8 11h5" opacity=".4"/></svg> Story Workshop</h1>
+        <div class="module-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline" onclick="openImportModal()">
+                <i data-lucide="upload" class="btn-icon"></i> Import Story
+            </button>
+            <a href="{{ path('app_story_new') }}" class="btn btn-primary"><i data-lucide="plus" class="btn-icon"></i> New Story</a>
+        </div>
+    </div>
+
+    {% if stories is empty %}
+        <div class="empty-state">
+            <p>No stories yet. Start writing your first one!</p>
+            <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                <a href="{{ path('app_story_new') }}" class="btn btn-primary">Create a Story</a>
+                <button type="button" class="btn btn-outline" onclick="openImportModal()">
+                    <i data-lucide="upload" style="width:14px;height:14px;"></i> Import from JSON
+                </button>
+            </div>
+        </div>
+    {% else %}
+    <div class="stories-grid">
+        {% for story in stories %}
+        <div class="story-card">
+            <div class="story-card-header">
+                <span class="story-genre-badge">{{ story.genreNames }}</span>
+                <span class="story-status {{ story.status|lower }}">{{ story.status ?? 'DRAFT' }}</span>
+            </div>
+            <h3 class="story-card-title">{{ story.title }}</h3>
+            <p class="story-card-excerpt">{{ story.content|length > 120 ? story.content|slice(0,120) ~ '…' : (story.content ?? 'No content yet.') }}</p>
+            <div class="story-card-meta">
+                <span><i data-lucide="book-text" style="width:14px;height:14px;"></i> {{ story.chapters|length }} chapters</span>
+            </div>
+            <div class="story-card-actions">
+                <a href="{{ path('app_story_show', {id: story.id}) }}" class="btn btn-outline btn-sm"><i data-lucide="eye" style="width:14px;height:14px;"></i> Read</a>
+                <a href="{{ path('app_story_edit', {id: story.id}) }}" class="btn btn-ghost btn-sm"><i data-lucide="pencil" style="width:14px;height:14px;"></i> Edit</a>
+                <a href="{{ path('app_story_export_pdf', {id: story.id}) }}" class="btn btn-ghost btn-sm" title="Export PDF"><i data-lucide="file-down" style="width:14px;height:14px;"></i></a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+
+{# ── Import Modal ── #}
+<div class="import-modal-overlay" id="importModal" style="display:none;">
+    <div class="import-modal">
+        <h3><i data-lucide="upload" style="width:20px;height:20px;"></i> Import a Story</h3>
+        <p style="color:var(--text-muted,#888);font-size:0.88rem;margin-bottom:16px;">
+            Upload a <strong>.json</strong> file exported from VirtuArts to import a story with all its chapters and scenes.
+        </p>
+        <form method="post" action="{{ path('app_story_import') }}" enctype="multipart/form-data" id="importForm">
+            <div class="import-dropzone" id="importDropzone" onclick="document.getElementById('importFile').click()">
+                <i data-lucide="file-json" style="width:36px;height:36px;margin-bottom:8px;"></i>
+                <div id="dropzoneText">Drop your .json file here or click to browse</div>
+                <input type="file" name="story_file" id="importFile" accept=".json" style="display:none;" required>
+            </div>
+            <div class="import-modal-actions">
+                <button type="button" class="btn btn-ghost" onclick="closeImportModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="importSubmitBtn" disabled>
+                    <i data-lucide="upload" style="width:14px;height:14px;"></i> Import
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+/* ── Import Modal Styles ── */
+.import-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOverlay 0.2s ease-out;
+}
+.import-modal {
+    background: var(--bg-card, #1e1e2e);
+    border: 1px solid var(--border, #333);
+    border-radius: 16px;
+    padding: 32px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: scaleIn 0.25s ease-out;
+}
+.import-modal h3 {
+    margin-bottom: 8px;
+    color: var(--accent, #7c3aed);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.import-dropzone {
+    border: 2px dashed var(--border, #444);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+    color: var(--text-muted, #888);
+}
+.import-dropzone:hover,
+.import-dropzone.dragover {
+    border-color: var(--accent, #7c3aed);
+    background: rgba(124, 58, 237, 0.06);
+    color: var(--accent, #7c3aed);
+}
+.import-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+@keyframes fadeInOverlay { from { opacity: 0; } to { opacity: 1; } }
+@keyframes scaleIn { from { opacity: 0; transform: scale(0.92); } to { opacity: 1; transform: scale(1); } }
+</style>
+
+<script>
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+function openImportModal() {
+    document.getElementById('importModal').style.display = 'flex';
+    setTimeout(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); }, 50);
+}
+function closeImportModal() {
+    document.getElementById('importModal').style.display = 'none';
+}
+
+// Close modal on backdrop click
+document.getElementById('importModal')?.addEventListener('click', function(e) {
+    if (e.target === this) closeImportModal();
+});
+
+// File input change: show file name & enable submit
+document.getElementById('importFile')?.addEventListener('change', function() {
+    const text = document.getElementById('dropzoneText');
+    const btn = document.getElementById('importSubmitBtn');
+    if (this.files.length > 0) {
+        text.textContent = '📄 ' + this.files[0].name;
+        btn.disabled = false;
+    } else {
+        text.textContent = 'Drop your .json file here or click to browse';
+        btn.disabled = true;
+    }
+});
+
+// Drag & drop support
+const dropzone = document.getElementById('importDropzone');
+if (dropzone) {
+    ['dragenter', 'dragover'].forEach(evt => {
+        dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+        dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    });
+    dropzone.addEventListener('drop', e => {
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            document.getElementById('importFile').files = files;
+            document.getElementById('dropzoneText').textContent = '📄 ' + files[0].name;
+            document.getElementById('importSubmitBtn').disabled = false;
+        }
+    });
+}
+</script>
+{% endblock %}

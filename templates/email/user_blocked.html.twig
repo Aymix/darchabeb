@@ -1,0 +1,34 @@
+{% extends 'email/base_email.html.twig' %}
+
+{% block subject %}Your VirtuArts Account Has Been Blocked{% endblock %}
+
+{% block header %}
+<div class="email-header" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+    <h1 style="color: #fff;">Account Blocked</h1>
+    <p style="color: rgba(255,255,255,0.8);">VirtuArts — Virtual Youth Arts House</p>
+</div>
+{% endblock %}
+
+{% block body %}
+    <p>Hello <strong>{{ user.fullName }}</strong>,</p>
+
+    <p>We're writing to inform you that your VirtuArts account (<strong>{{ user.email }}</strong>) has been <strong style="color: #ef4444;">temporarily blocked</strong> by a supervisor.</p>
+
+    <div class="email-warning-box">
+        <div style="font-size: 12px; font-weight: 600; color: #fca5a5; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Reason for block</div>
+        <p style="font-size: 15px; font-weight: 600;">{{ reason }}</p>
+    </div>
+
+    <div class="email-info-box">
+        <div class="label">Blocked by</div>
+        <div class="value">{{ supervisorName }}</div>
+    </div>
+
+    <p>While your account is blocked, you will not be able to access the platform or any of its features.</p>
+
+    <div class="email-divider"></div>
+
+    <p>If you believe this action was taken in error, please contact the platform administration team for further assistance.</p>
+
+    <p class="text-muted">This is an automated notification from VirtuArts. Please do not reply directly to this email.</p>
+{% endblock %}

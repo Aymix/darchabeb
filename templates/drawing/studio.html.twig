@@ -1,0 +1,262 @@
+{% extends 'base.html.twig' %}
+{% block title %}Drawing Studio — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/aura-embed.css') }}">
+{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_user_dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M12 20a8 8 0 1 0 0-16 8 8 0 0 0 0 16Z"/><path d="M12 12a2 2 0 1 0 4 0c0-2-2-3-2-5a4 4 0 0 0-8 0c0 2.5 2 3.5 2 5a2 2 0 0 0 4 0Z" fill="#ff9500" opacity=".4"/></svg> Drawing Studio</h1>
+        <div class="module-actions">
+            <a href="{{ path('app_drawing_gallery') }}" class="btn btn-outline">My Gallery</a>
+        </div>
+    </div>
+
+    <div class="studio-layout">
+        {# ── TOOLBAR ── #}
+        <div class="studio-toolbar">
+            <div class="toolbar-section">
+                <h3>Brushes</h3>
+                <div class="tool-grid">
+                    <button data-tool="brush" class="tool-btn active" title="Brush">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18.37 2.63a2.12 2.12 0 0 1 3 3L14 13l-4 1 1-4Z"/><path d="M9 15c-3 1-5 3-5 6h6c0-3-1-5-1-6Z" opacity=".5"/></svg>
+                    </button>
+                    <button data-tool="pencil" class="tool-btn" title="Pencil">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m16.5 3.5 4 4L7 21H3v-4L16.5 3.5Z"/></svg>
+                    </button>
+                    <button data-tool="spray" class="tool-btn" title="Spray Can">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="6" y="10" width="8" height="12" rx="1"/><path d="M10 10V6"/><circle cx="16" cy="4" r="1" fill="currentColor" opacity=".5"/><circle cx="19" cy="3" r="1" fill="currentColor" opacity=".3"/><circle cx="18" cy="6" r="1" fill="currentColor" opacity=".4"/><circle cx="20" cy="7" r="1" fill="currentColor" opacity=".2"/></svg>
+                    </button>
+                    <button data-tool="calligraphy" class="tool-btn" title="Calligraphy">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 20c3-3 8-12 14-16"/><path d="M4 20h4" opacity=".5"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Tools</h3>
+                <div class="tool-grid">
+                    <button data-tool="eraser" class="tool-btn" title="Eraser">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m18 13-7 7H6l-3-3a2 2 0 0 1 0-3l10-10a2 2 0 0 1 3 0l2 2a2 2 0 0 1 0 3Z"/><path d="M20 21H6" opacity=".4"/></svg>
+                    </button>
+                    <button data-tool="fill" class="tool-btn" title="Paint Bucket">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2.5 13.5 9-9 7 7-9 9a1 1 0 0 1-1.4 0l-5.6-5.6a1 1 0 0 1 0-1.4Z"/><path d="M20 16c1 1.5 0 3-1.5 3S17 17.5 18 16l2-3Z" fill="currentColor" opacity=".4"/></svg>
+                    </button>
+                    <button data-tool="eyedropper" class="tool-btn" title="Eyedropper">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m2 22 1-3 8-8 2 2-8 8Z"/><path d="m13 11 3-3a2 2 0 0 0 0-3l-1-1a2 2 0 0 0-3 0l-3 3"/><circle cx="18" cy="4" r="2" opacity=".4"/></svg>
+                    </button>
+                    <button data-tool="smudge" class="tool-btn" title="Smudge">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17c-2 0-3-1-3-3s2-3 4-5 3-4 3-6"/><path d="M17 17c2 0 3-1 3-3s-2-3-4-5-3-4-3-6" opacity=".5"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Shapes</h3>
+                <div class="tool-grid">
+                    <button data-tool="line" class="tool-btn" title="Line">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="4" y1="20" x2="20" y2="4"/></svg>
+                    </button>
+                    <button data-tool="rect" class="tool-btn" title="Rectangle">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="1"/></svg>
+                    </button>
+                    <button data-tool="circle" class="tool-btn" title="Circle">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/></svg>
+                    </button>
+                    <button data-tool="triangle" class="tool-btn" title="Triangle">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 2 21h20Z"/></svg>
+                    </button>
+                    <button data-tool="star" class="tool-btn" title="Star">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3 6.5L22 9.5l-5 5 1.5 7L12 18l-6.5 3.5L7 14.5 2 9.5l7-1Z"/></svg>
+                    </button>
+                    <button data-tool="text" class="tool-btn" title="Text">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16"/><path d="M12 6v14"/><path d="M8 20h8" opacity=".4"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Opacity: <span id="opacityLabel">100%</span></h3>
+                <input type="range" id="brushOpacity" min="5" max="100" value="100" class="slider">
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Color</h3>
+                <input type="color" id="colorPicker" value="#f97316" class="color-input">
+                <div class="color-palette">
+                    <span data-color="#f97316" class="swatch active" style="background:#f97316"></span>
+                    <span data-color="#ef4444" class="swatch" style="background:#ef4444"></span>
+                    <span data-color="#eab308" class="swatch" style="background:#eab308"></span>
+                    <span data-color="#22c55e" class="swatch" style="background:#22c55e"></span>
+                    <span data-color="#3b82f6" class="swatch" style="background:#3b82f6"></span>
+                    <span data-color="#8b5cf6" class="swatch" style="background:#8b5cf6"></span>
+                    <span data-color="#ec4899" class="swatch" style="background:#ec4899"></span>
+                    <span data-color="#000000" class="swatch" style="background:#000000"></span>
+                    <span data-color="#ffffff" class="swatch" style="background:#ffffff;border:1px solid #444"></span>
+                    <span data-color="#6b7280" class="swatch" style="background:#6b7280"></span>
+                    <span data-color="#92400e" class="swatch" style="background:#92400e"></span>
+                    <span data-color="#14b8a6" class="swatch" style="background:#14b8a6"></span>
+                </div>
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Size: <span id="sizeLabel">4px</span></h3>
+                <input type="range" id="brushSize" min="1" max="40" value="4" class="slider">
+            </div>
+
+            <div class="toolbar-section">
+                <h3>Actions</h3>
+                <div class="tool-grid">
+                    <button id="btnUndo" class="tool-btn" title="Undo">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 10h13a4 4 0 0 1 0 8H7"/><path d="m7 6-4 4 4 4"/></svg>
+                    </button>
+                    <button id="btnRedo" class="tool-btn" title="Redo">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10H8a4 4 0 0 0 0 8h9"/><path d="m17 6 4 4-4 4"/></svg>
+                    </button>
+                    <button id="btnClear" class="tool-btn" title="Clear Canvas">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M5 6v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V6"/><path d="M10 11v6" opacity=".5"/><path d="M14 11v6" opacity=".5"/></svg>
+                    </button>
+                    <button id="btnDownload" class="tool-btn" title="Download PNG">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v13"/><path d="m8 12 4 4 4-4"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg>
+                    </button>
+                </div>
+            </div>
+
+            {# ━━━ UNSPLASH REFERENCE IMAGES ━━━ #}
+            <div class="toolbar-section">
+                <h3><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" opacity=".5"/><path d="m21 15-5-5L5 21"/></svg> Reference Images</h3>
+                <div style="display:flex;gap:6px;margin-bottom:8px;">
+                    <input type="text" id="unsplashQuery" class="form-control" placeholder="Search photos…" style="flex:1;padding:6px 10px;font-size:.82rem;background:var(--color-bg-raised);border:1px solid var(--border);border-radius:8px;color:#fff;">
+                    <button id="unsplashSearch" class="btn btn-outline btn-sm" style="white-space:nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></button>
+                </div>
+                <div id="unsplashResults" style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;max-height:240px;overflow-y:auto;border-radius:8px;"></div>
+                <div id="unsplashCredit" style="font-size:.6rem;color:var(--color-text-muted);margin-top:4px;"></div>
+            </div>
+
+            <button id="btnSave" class="btn btn-primary btn-block"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8"/><path d="M7 3v5h8"/></svg> Save Drawing</button>
+
+            {# ━━━ AI ASSISTANT ━━━ #}
+            <div style="margin-top:16px;">
+                {% include 'components/_aura_panel.html.twig' with { module: 'drawing' } %}
+            </div>
+        </div>
+
+        {# ── CANVAS ── #}
+        <div class="studio-canvas-wrap">
+            <canvas id="drawingCanvas"></canvas>
+            {# Floating reference image overlay #}
+            <div id="refImagePanel" class="ref-image-panel" style="display:none;">
+                <div class="ref-image-header" id="refImageDrag">
+                    <span class="ref-image-title">Reference</span>
+                    <div class="ref-image-controls">
+                        <input type="range" id="refOpacity" min="10" max="100" value="70" class="ref-opacity-slider" title="Opacity">
+                        <button id="refImageClose" class="ref-image-close" title="Close">×</button>
+                    </div>
+                </div>
+                <div class="ref-image-body">
+                    <img id="refImageImg" src="" alt="Reference" crossorigin="anonymous">
+                </div>
+                <div class="ref-image-resize" id="refImageResize"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script src="{{ asset('js/drawing-studio.js') }}"></script>
+<script src="{{ asset('js/aura-embed.js') }}" defer></script>
+<script>
+// ── Unsplash Reference Images + Floating Panel ──
+(function(){
+    const input = document.getElementById('unsplashQuery');
+    const btn = document.getElementById('unsplashSearch');
+    const grid = document.getElementById('unsplashResults');
+    const credit = document.getElementById('unsplashCredit');
+    const panel = document.getElementById('refImagePanel');
+    const refImg = document.getElementById('refImageImg');
+    const refClose = document.getElementById('refImageClose');
+    const refOpacity = document.getElementById('refOpacity');
+    const refDrag = document.getElementById('refImageDrag');
+    const refResize = document.getElementById('refImageResize');
+
+    // Show reference image in floating panel
+    function showRefImage(url) {
+        refImg.src = url;
+        panel.style.display = 'flex';
+        panel.style.top = '60px';
+        panel.style.left = '60px';
+        panel.style.width = '280px';
+    }
+
+    // Close
+    refClose.addEventListener('click', () => { panel.style.display = 'none'; });
+
+    // Opacity
+    refOpacity.addEventListener('input', e => {
+        refImg.style.opacity = parseInt(e.target.value) / 100;
+    });
+
+    // Drag
+    let dragging = false, dx = 0, dy = 0;
+    refDrag.addEventListener('mousedown', e => {
+        dragging = true;
+        dx = e.clientX - panel.offsetLeft;
+        dy = e.clientY - panel.offsetTop;
+        e.preventDefault();
+    });
+    document.addEventListener('mousemove', e => {
+        if (!dragging) return;
+        panel.style.left = (e.clientX - dx) + 'px';
+        panel.style.top = (e.clientY - dy) + 'px';
+    });
+    document.addEventListener('mouseup', () => { dragging = false; });
+
+    // Resize
+    let resizing = false, rw = 0, rx = 0;
+    refResize.addEventListener('mousedown', e => {
+        resizing = true;
+        rw = panel.offsetWidth;
+        rx = e.clientX;
+        e.preventDefault();
+        e.stopPropagation();
+    });
+    document.addEventListener('mousemove', e => {
+        if (!resizing) return;
+        panel.style.width = Math.max(150, rw + (e.clientX - rx)) + 'px';
+    });
+    document.addEventListener('mouseup', () => { resizing = false; });
+
+    // Search
+    async function searchUnsplash() {
+        const q = input.value.trim();
+        if (!q) return;
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:var(--color-text-muted);font-size:.8rem;">Searching…</div>';
+        credit.textContent = '';
+        try {
+            const res = await fetch(`{{ path('api_unsplash_search') }}?q=${encodeURIComponent(q)}&per_page=9`);
+            const data = await res.json();
+            if (data.error) { grid.innerHTML = `<div style="grid-column:1/-1;color:#f87171;font-size:.75rem;padding:8px;">${data.error}</div>`; return; }
+            if (!data.results.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:12px;color:var(--color-text-muted);font-size:.8rem;">No results found.</div>'; return; }
+            grid.innerHTML = data.results.map(img => `
+                <div class="unsplash-thumb" data-url="${img.regular}" title="Click to use as reference · ${img.author}">
+                    <img src="${img.thumb}" alt="${img.alt || ''}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                </div>
+            `).join('');
+            // Bind click → float as reference
+            grid.querySelectorAll('.unsplash-thumb').forEach(el => {
+                el.addEventListener('click', () => showRefImage(el.dataset.url));
+            });
+            credit.innerHTML = `Photos by <a href="https://unsplash.com/?utm_source=virtuarts&utm_medium=referral" target="_blank" style="color:var(--color-primary);">Unsplash</a> · ${data.total} results`;
+        } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;color:#f87171;font-size:.75rem;padding:8px;">Failed to load images.</div>'; }
+    }
+
+    btn.addEventListener('click', searchUnsplash);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') searchUnsplash(); });
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+{% block title %}Pixel Art Gallery — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_pixelart_editor') }}" class="btn btn-ghost">← Editor</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg> Pixel Art Gallery</h1>
+        <div class="module-actions">
+            <a href="{{ path('app_pixelart_editor') }}" class="btn btn-primary">+ New Pixel Art</a>
+        </div>
+    </div>
+
+    {% if artworks is empty %}
+        <div class="empty-state">
+            <p>No pixel art yet. Be the first to create one!</p>
+            <a href="{{ path('app_pixelart_editor') }}" class="btn btn-primary">Open Editor</a>
+        </div>
+    {% else %}
+        <div class="gallery-grid">
+            {% for art in artworks %}
+            <div class="gallery-card">
+                {% if art.imagePath %}
+                    <img src="{{ art.imagePath }}" alt="{{ art.name }}" class="gallery-img" style="image-rendering:pixelated;">
+                {% else %}
+                    <div class="gallery-img" style="display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:3rem">🕹️</span>
+                    </div>
+                {% endif %}
+                <div class="gallery-info">
+                    <h3>{{ art.name ?? 'Untitled' }}</h3>
+                    <span class="gallery-date">❤️ {{ art.likes }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+{% block title %}Museum Submissions — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_museum_index') }}" class="btn btn-ghost">← Museum</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M9 2v2h6V2" opacity=".4"/><path d="M9 12h6" opacity=".4"/><path d="M9 16h4" opacity=".4"/></svg> Submissions</h1>
+    </div>
+
+    {% if submissions is empty %}
+        <div class="empty-state"><p>No submissions yet.</p></div>
+    {% else %}
+    <div class="gallery-grid">
+        {% for sub in submissions %}
+        <div class="gallery-card">
+            {% set displayImage = sub.imagePath ?? '/uploads/museum/demo_' ~ sub.type ~ '_' ~ sub.id ~ '.png' %}
+            {% if displayImage %}
+                <img src="{{ displayImage }}" alt="{{ sub.title }}" class="gallery-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                <div class="gallery-img" style="display:none;align-items:center;justify-content:center;"><span style="font-size:3rem">📋</span></div>
+            {% else %}
+                <div class="gallery-img" style="display:flex;align-items:center;justify-content:center;"><span style="font-size:3rem">📋</span></div>
+            {% endif %}
+            <div class="gallery-info">
+                <h3>{{ sub.title ?? 'Untitled' }}</h3>
+                <span class="gallery-date">Type: {{ sub.type }} · Status: <span class="story-status {{ sub.status|lower }}">{{ sub.status }}</span></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,321 @@
+/* ═══════════════════════════════════════════════════════════════════
+   VirtuArts — Signature Hero
+   Brand-aligned (warm orange/amber on deep space black),
+   stable grid layout, gooey-morph title, ambient glow.
+   Partner file: templates/components/_hero_scroll_expand.html.twig
+   ═══════════════════════════════════════════════════════════════════ */
+
+.va-hero {
+    position: relative;
+    isolation: isolate;
+    min-height: 100dvh;
+    width: 100%;
+    overflow: clip;
+    color: var(--color-text);
+    background: var(--color-bg);
+    font-family: var(--font-family);
+    --va-hero-parallax: 0px;
+}
+
+/* Keep the SVG filter defs invisible but renderable */
+.va-hero__goo-defs {
+    position: absolute;
+    width: 0; height: 0;
+    pointer-events: none;
+}
+
+/* ── Ambient aura ───────────────────────────────────── */
+.va-hero__aura {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.va-hero__orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: min(92vw, 900px);
+    aspect-ratio: 1 / 1;
+    transform: translate3d(-50%, calc(-50% + var(--va-hero-parallax)), 0);
+    background:
+        radial-gradient(circle at 50% 45%,
+            rgba(249, 115, 22, .45) 0%,
+            rgba(234, 179, 8, .30) 25%,
+            rgba(239, 68, 68, .15) 45%,
+            rgba(10, 10, 12, 0) 70%);
+    filter: blur(30px);
+    opacity: .9;
+    will-change: transform;
+    animation: va-hero-orb-pulse 9s ease-in-out infinite;
+}
+
+@keyframes va-hero-orb-pulse {
+    0%, 100% { opacity: .85; }
+    50%      { opacity: 1; }
+}
+
+.va-hero__grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+        radial-gradient(rgba(255,255,255,.08) 1px, transparent 1px);
+    background-size: 42px 42px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 80%);
+    -webkit-mask-image: radial-gradient(ellipse 80% 60% at 50% 50%, #000 30%, transparent 80%);
+    opacity: .35;
+}
+
+/* Soft vignette via a pseudo-element */
+.va-hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background: linear-gradient(180deg,
+        rgba(10,10,12,0) 55%,
+        rgba(10,10,12,.85) 100%);
+}
+
+/* ── Inner container ─────────────────────────────────── */
+.va-hero__inner {
+    position: relative;
+    z-index: 2;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: clamp(5rem, 12vh, 8rem) var(--space-lg) clamp(6rem, 14vh, 9rem);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: var(--space-lg);
+    min-height: 100dvh;
+    justify-content: center;
+}
+
+/* ── Eyebrow / trust badge ───────────────────────────── */
+.va-hero__eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    padding: 8px 16px;
+    border-radius: var(--radius-full);
+    background: rgba(249, 115, 22, .08);
+    border: 1px solid rgba(249, 115, 22, .28);
+    color: var(--color-primary-light);
+    font-size: .82rem;
+    font-weight: 600;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+    animation: va-hero-fade-in .8s .1s both;
+}
+.va-hero__eyebrow-icon { width: 16px; height: 16px; }
+
+/* ── Title ───────────────────────────────────────────── */
+.va-hero__title {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    gap: .3em;
+    margin: 0;
+    font-weight: 900;
+    font-size: clamp(2.4rem, 6.8vw, 5.5rem);
+    line-height: 1.02;
+    letter-spacing: -.025em;
+    color: var(--color-text);
+    animation: va-hero-fade-in-up .9s .25s both;
+}
+.va-hero__title-static {
+    white-space: nowrap;
+}
+
+/* Gooey slot — reserves horizontal space so layout doesn't jump */
+.va-hero__goo-slot {
+    position: relative;
+    display: inline-block;
+    min-width: clamp(4ch, 6ch, 8ch);
+    height: 1em;
+    vertical-align: baseline;
+}
+.va-hero__goo-stage {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.va-hero__goo-word {
+    position: absolute;
+    display: inline-block;
+    font-weight: 900;
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: blur(0px);
+    opacity: 1;
+    will-change: filter, opacity;
+    white-space: nowrap;
+    letter-spacing: -.02em;
+}
+[data-hero-se-word-b] { opacity: 0; }
+
+.va-hero__tagline {
+    margin: -.1em 0 0;
+    font-size: clamp(1.5rem, 3.5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -.01em;
+    background: var(--gradient-text);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: va-hero-fade-in-up .9s .35s both;
+}
+
+/* ── Subtitle ────────────────────────────────────────── */
+.va-hero__subtitle {
+    max-width: 640px;
+    margin: 0 auto;
+    color: var(--color-text-muted);
+    font-size: clamp(1rem, 1.3vw, 1.15rem);
+    line-height: 1.6;
+    animation: va-hero-fade-in-up .9s .45s both;
+}
+
+/* ── CTA row ─────────────────────────────────────────── */
+.va-hero__ctas {
+    display: inline-flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .75rem;
+    margin-top: var(--space-sm);
+    animation: va-hero-fade-in-up .9s .55s both;
+}
+
+/* ── Discipline chips ────────────────────────────────── */
+.va-hero__chips {
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: .6rem;
+    list-style: none;
+    animation: va-hero-fade-in-up .9s .7s both;
+}
+.va-hero__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    background: rgba(22, 22, 26, .7);
+    border: 1px solid var(--color-border);
+    color: var(--color-text-muted);
+    font-size: .82rem;
+    font-weight: 500;
+    backdrop-filter: blur(6px);
+    transition: var(--transition);
+}
+.va-hero__chip:hover {
+    color: var(--color-primary-light);
+    border-color: rgba(249, 115, 22, .4);
+    background: rgba(249, 115, 22, .06);
+    transform: translateY(-2px);
+}
+.va-hero__chip i,
+.va-hero__chip svg {
+    width: 14px; height: 14px;
+    color: var(--color-primary);
+}
+
+/* ── Scroll hint ─────────────────────────────────────── */
+.va-hero__hint {
+    position: absolute;
+    left: 50%;
+    bottom: clamp(1.25rem, 3.5vh, 2.25rem);
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .55rem;
+    font-size: .78rem;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+    z-index: 4;
+    text-decoration: none;
+    padding: 8px 14px;
+    border-radius: var(--radius-full);
+    border: 1px solid var(--color-border);
+    background: rgba(22, 22, 26, .6);
+    backdrop-filter: blur(6px);
+    transition: var(--transition);
+    animation: va-hero-fade-in 1.2s 1s both;
+}
+.va-hero__hint:hover {
+    color: var(--color-primary-light);
+    border-color: rgba(249, 115, 22, .35);
+}
+.va-hero__hint-icon { width: 16px; height: 16px; }
+.va-hero__hint-chev {
+    width: 16px; height: 16px;
+    animation: va-hero-bounce 1.8s ease-in-out infinite;
+}
+
+/* ── A11y helper ─────────────────────────────────────── */
+.va-hero .sr-only {
+    position: absolute;
+    width: 1px; height: 1px;
+    padding: 0; margin: -1px; overflow: hidden;
+    clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* ── Keyframes ───────────────────────────────────────── */
+@keyframes va-hero-bounce {
+    0%, 100% { transform: translateY(0);    opacity: .7; }
+    50%      { transform: translateY(5px);  opacity: 1; }
+}
+@keyframes va-hero-fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes va-hero-fade-in-up {
+    from { opacity: 0; transform: translateY(18px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Reduced motion ──────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+    .va-hero__orb { animation: none; }
+    .va-hero__hint-chev { animation: none; }
+    .va-hero__eyebrow,
+    .va-hero__title,
+    .va-hero__tagline,
+    .va-hero__subtitle,
+    .va-hero__ctas,
+    .va-hero__chips,
+    .va-hero__hint {
+        animation: none;
+    }
+    [data-hero-se-word-a], [data-hero-se-word-b] {
+        filter: none !important;
+    }
+}
+
+/* ── Mobile tuning ───────────────────────────────────── */
+@media (max-width: 640px) {
+    .va-hero__title { font-size: clamp(2rem, 10vw, 3rem); }
+    .va-hero__tagline { font-size: clamp(1.3rem, 6vw, 1.8rem); }
+    .va-hero__inner {
+        padding: clamp(4rem, 10vh, 6rem) var(--space-md) clamp(5rem, 12vh, 7rem);
+        gap: var(--space-md);
+    }
+    .va-hero__chips { gap: .4rem; }
+    .va-hero__chip { padding: 6px 10px; font-size: .74rem; }
+    .va-hero__hint { font-size: .7rem; letter-spacing: .14em; }
+}

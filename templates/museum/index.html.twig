@@ -1,0 +1,386 @@
+{% extends 'base.html.twig' %}
+{% block title %}Virtual Museum — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        {% if is_granted('ROLE_USER') %}
+            <a href="{{ path('app_user_dashboard') }}" class="btn btn-ghost"><i data-lucide="arrow-left" class="btn-icon"></i> Dashboard</a>
+        {% else %}
+            <a href="{{ path('app_home') }}" class="btn btn-ghost"><i data-lucide="arrow-left" class="btn-icon"></i> Home</a>
+        {% endif %}
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M2 20h20"/><path d="M5 20V8l7-5 7 5v12"/><path d="M9 20v-6h6v6" opacity=".4"/><path d="M3 8h18" opacity=".4"/></svg> Virtual Museum</h1>
+        <div class="module-actions" style="display:flex;gap:8px;">
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_museum_my_submissions') }}" class="btn btn-outline"><i data-lucide="clipboard-list" class="btn-icon"></i> My Submissions</a>
+                <a href="{{ path('app_museum_submit') }}" class="btn btn-primary"><i data-lucide="plus" class="btn-icon"></i> Submit Artwork</a>
+            {% else %}
+                <a href="{{ path('app_login') }}" class="btn btn-outline"><i data-lucide="log-in" class="btn-icon"></i> Sign In</a>
+                <a href="{{ path('app_register') }}" class="btn btn-primary"><i data-lucide="user-plus" class="btn-icon"></i> Create Account</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {# ── Welcome banner for visitors ── #}
+    {% if not is_granted('ROLE_USER') %}
+    <div style="background:linear-gradient(135deg,rgba(124,58,237,0.12),rgba(249,115,22,0.08));border:1px solid rgba(124,58,237,0.2);border-radius:16px;padding:24px 28px;margin-top:16px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:2rem;">🏛️</span>
+            <div>
+                <h2 style="font-size:1.15rem;font-weight:800;color:var(--text-primary,#fff);margin:0;">Welcome to the VirtuArts Museum</h2>
+                <p style="font-size:.85rem;color:var(--text-muted,#aaa);margin:4px 0 0;">Browse original artworks from our talented artists. Click on any piece to view details and purchase!</p>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if submissions is empty %}
+        <div class="empty-state">
+            <i data-lucide="landmark" style="width:64px;height:64px;color:var(--accent);opacity:0.4;"></i>
+            <p style="font-size:1.1rem;margin-top:12px;">The museum is empty. Be the first to submit artwork!</p>
+            {% if is_granted('ROLE_USER') %}
+                <a href="{{ path('app_museum_submit') }}" class="btn btn-primary" style="margin-top:8px;">Submit Artwork</a>
+            {% endif %}
+        </div>
+    {% else %}
+    <div class="gallery-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:20px;margin-top:20px;">
+        {% for sub in submissions %}
+        <div class="gallery-card museum-card" style="background:var(--bg-card);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all 0.3s;position:relative;cursor:pointer;"
+             onclick="openArtwork({{ sub.id }})">
+            <div class="gallery-img" style="height:220px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,0.05);position:relative;">
+                {% set displayImage = enrichments[sub.id].image ?? sub.imagePath %}
+                {% if displayImage %}
+                    <img src="{{ displayImage }}" alt="{{ sub.title }}" style="width:100%;height:100%;object-fit:cover;transition:transform .3s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
+                    <i data-lucide="image" style="display:none;width:48px;height:48px;color:var(--text-muted);opacity:0.3;"></i>
+                {% else %}
+                    <i data-lucide="image" style="width:48px;height:48px;color:var(--text-muted);opacity:0.3;"></i>
+                {% endif %}
+                {% if sub.price %}
+                <div style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.7);backdrop-filter:blur(8px);padding:6px 14px;border-radius:20px;">
+                    <span style="font-size:1rem;font-weight:800;color:#22c55e;">{{ sub.price|number_format(2) }}</span>
+                    <span style="font-size:.7rem;color:rgba(255,255,255,.5);font-weight:600;">TND</span>
+                </div>
+                {% endif %}
+                {% if sub.type == 'music' %}
+                <div style="position:absolute;top:12px;left:12px;background:rgba(124,58,237,0.8);backdrop-filter:blur(8px);padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="headphones" style="width:12px;height:12px;color:#fff;"></i>
+                    <span style="font-size:.68rem;color:#fff;font-weight:600;">LISTEN</span>
+                </div>
+                {% elseif sub.type == 'story' %}
+                <div style="position:absolute;top:12px;left:12px;background:rgba(245,158,11,0.8);backdrop-filter:blur(8px);padding:5px 10px;border-radius:8px;display:flex;align-items:center;gap:4px;">
+                    <i data-lucide="book-open" style="width:12px;height:12px;color:#fff;"></i>
+                    <span style="font-size:.68rem;color:#fff;font-weight:600;">READ</span>
+                </div>
+                {% endif %}
+            </div>
+            <div class="gallery-info" style="padding:16px;">
+                <h3 style="font-size:1rem;font-weight:700;margin:0 0 6px;color:var(--text-primary);">{{ sub.title ?? 'Untitled' }}</h3>
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+                    <span class="story-genre-badge" style="font-size:0.72rem;">{{ sub.type ?? 'artwork' }}</span>
+                    {% if sub.aiAutoApproved %}
+                        <span style="font-size:.68rem;color:#22c55e;font-weight:600;">🤖 AI Approved</span>
+                    {% endif %}
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between;">
+                    <span style="font-size:0.78rem;color:var(--text-muted);">
+                        <i data-lucide="user" style="width:12px;height:12px;"></i>
+                        {{ sub.user ? sub.user.fullName : 'Unknown Artist' }}
+                    </span>
+                    {% if sub.submittedAt %}
+                        <span style="font-size:0.72rem;color:var(--text-muted);">{{ sub.submittedAt|date('d/m/Y') }}</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {# ━━━ ART INSTITUTE OF CHICAGO — EXPLORE REAL ART ━━━ #}
+    <div style="margin-top:32px;padding:0 0 40px;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+            <i data-lucide="search" style="width:18px;height:18px;color:var(--accent);"></i>
+            <h2 style="font-size:1.1rem;font-weight:700;color:var(--text-primary,#fff);margin:0;">Explore Real Art (Art Institute of Chicago)</h2>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <input type="text" id="articQuery" class="form-control" placeholder="Search artworks… (e.g. Monet, landscape, portrait)" style="flex:1;">
+            <button id="articSearch" class="btn btn-primary">🔍 Search</button>
+            <button id="articRandom" class="btn btn-outline">🎲 Random</button>
+        </div>
+        <div id="articResults" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;"></div>
+        <div id="articInfo" style="font-size:.7rem;color:var(--text-muted,#888);margin-top:10px;"></div>
+    </div>
+</section>
+
+{# ══════════════════════════════════════════
+   ARTWORK DETAIL MODAL — opens on click
+══════════════════════════════════════════ #}
+<div id="artworkModal" style="display:none;position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);overflow-y:auto;" onclick="if(event.target===this)closeArtwork()">
+    <div style="max-width:800px;margin:40px auto;background:var(--bg-card,#1a1a2e);border:1px solid var(--border,#333);border-radius:20px;overflow:hidden;animation:modalIn .3s ease;">
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+{# ══════════════════════════════════════════
+   PAYMENT MODAL — demo checkout
+══════════════════════════════════════════ #}
+<div id="paymentModal" style="display:none;position:fixed;inset:0;z-index:10001;background:rgba(0,0,0,0.85);backdrop-filter:blur(16px);" onclick="if(event.target===this)closePayment()">
+    <div style="max-width:480px;margin:80px auto;background:var(--bg-card,#1a1a2e);border:1px solid var(--border,#333);border-radius:20px;overflow:hidden;animation:modalIn .3s ease;padding:32px;">
+        <div id="paymentContent"></div>
+    </div>
+</div>
+
+<style>
+@keyframes modalIn{from{opacity:0;transform:translateY(20px)scale(.97)}to{opacity:1;transform:translateY(0)scale(1)}}
+.museum-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(124,58,237,0.15);border-color:rgba(124,58,237,0.3)!important}
+.pay-input{width:100%;padding:12px 14px;border:1px solid var(--border,#444);border-radius:10px;background:var(--bg-secondary,#12121f);color:var(--text-primary,#fff);font-size:.9rem;margin-bottom:12px;outline:none;transition:border-color .2s}
+.pay-input:focus{border-color:#7c3aed}
+.pay-row{display:flex;gap:12px}
+.pay-row .pay-input{flex:1}
+.pay-success{text-align:center;padding:20px 0}
+.pay-success .check{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:28px;animation:popIn .4s ease}
+@keyframes popIn{0%{transform:scale(0)}60%{transform:scale(1.2)}100%{transform:scale(1)}}
+</style>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+if (typeof lucide !== 'undefined') lucide.createIcons();
+
+// ── Artwork Data ──
+const artworks = {
+    {% for sub in submissions %}
+    {{ sub.id }}: {
+        id: {{ sub.id }},
+        title: {{ sub.title|default('Untitled')|json_encode|raw }},
+        type: {{ (sub.type ?? 'artwork')|json_encode|raw }},
+        image: {{ (enrichments[sub.id].image ?? '')|json_encode|raw }},
+        content: {{ (enrichments[sub.id].content ?? '')|json_encode|raw }},
+        artist: {{ (sub.user ? sub.user.fullName : 'Unknown Artist')|json_encode|raw }},
+        price: {{ sub.price ?? 'null' }},
+        date: {{ sub.submittedAt ? sub.submittedAt|date('d/m/Y')|json_encode|raw : '"—"' }},
+        aiApproved: {{ sub.aiAutoApproved ? 'true' : 'false' }},
+        note: {{ (sub.supervisorNote ?? '')|json_encode|raw }},
+        audio: {{ sub.type == 'music' ? ('"/uploads/audio/demo_music_' ~ sub.id ~ '.wav"')|raw : 'null' }}
+    },
+    {% endfor %}
+};
+
+// ── Open Artwork Detail ──
+function openArtwork(id) {
+    const a = artworks[id];
+    if (!a) return;
+    const modal = document.getElementById('artworkModal');
+    const content = document.getElementById('modalContent');
+
+    const priceHtml = a.price ? `<div style="font-size:1.6rem;font-weight:800;color:#22c55e;margin:8px 0;">${parseFloat(a.price).toFixed(2)} <span style="font-size:.85rem;color:rgba(255,255,255,.4);">TND</span></div>` : '';
+    const buyBtn = a.price ? `<button onclick="event.stopPropagation();openPayment(${a.id})" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;font-weight:700;border-radius:12px;margin-top:12px;">
+        <i data-lucide="shopping-cart" style="width:16px;height:16px;"></i> Buy Now — ${parseFloat(a.price).toFixed(2)} TND
+    </button>` : '';
+
+    const aiTag = a.aiApproved ? `<span style="font-size:.75rem;background:rgba(34,197,94,0.15);color:#22c55e;padding:4px 10px;border-radius:8px;font-weight:600;">🤖 AI Approved</span>` : '';
+
+    content.innerHTML = `
+        <div style="position:relative;">
+            ${a.image ? `<img src="${a.image}" alt="${a.title}" style="width:100%;max-height:450px;object-fit:contain;background:#0a0a15;display:block;">` :
+            '<div style="height:250px;display:flex;align-items:center;justify-content:center;background:#0a0a15;"><i data-lucide="image" style="width:64px;height:64px;color:#555;"></i></div>'}
+            <button onclick="closeArtwork()" style="position:absolute;top:12px;right:12px;background:rgba(0,0,0,0.6);border:none;color:#fff;width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;backdrop-filter:blur(8px);">✕</button>
+        </div>
+        <div style="padding:24px 28px 28px;">
+            <h2 style="font-size:1.4rem;font-weight:800;color:var(--text-primary,#fff);margin:0 0 8px;">${a.title}</h2>
+            <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+                <span class="story-genre-badge" style="font-size:.75rem;">${a.type}</span>
+                ${aiTag}
+            </div>
+            <div style="display:flex;align-items:center;gap:16px;color:var(--text-muted,#888);font-size:.85rem;margin-bottom:16px;">
+                <span><i data-lucide="user" style="width:14px;height:14px;"></i> ${a.artist}</span>
+                <span><i data-lucide="calendar" style="width:14px;height:14px;"></i> ${a.date}</span>
+            </div>
+            ${a.content ? `<div style="font-size:.95rem;color:var(--text-primary,#fff);padding:20px;background:rgba(245,158,11,0.06);border-radius:12px;margin-bottom:16px;border:1px solid rgba(245,158,11,0.15);line-height:1.7;max-height:240px;overflow-y:auto;white-space:pre-wrap;">${a.content}</div>` : ''}
+            ${a.note ? `<div style="font-size:.8rem;color:var(--text-muted,#888);padding:12px;background:rgba(124,58,237,0.05);border-radius:10px;margin-bottom:12px;border-left:3px solid #7c3aed;">${a.note}</div>` : ''}
+            ${a.audio ? `<div style="background:rgba(124,58,237,0.06);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:16px;margin-bottom:16px;">
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+                    <i data-lucide="headphones" style="width:16px;height:16px;color:#7c3aed;"></i>
+                    <span style="font-size:.85rem;font-weight:600;color:var(--text-primary,#fff);">Listen to this track</span>
+                </div>
+                <audio controls style="width:100%;border-radius:8px;" preload="auto">
+                    <source src="${a.audio}" type="audio/wav">
+                    Your browser does not support audio.
+                </audio>
+            </div>` : ''}
+            <div style="border-top:1px solid var(--border,#333);padding-top:16px;margin-top:8px;">
+                ${priceHtml}
+                ${buyBtn}
+            </div>
+        </div>
+    `;
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    if (typeof lucide !== 'undefined') setTimeout(() => lucide.createIcons(), 50);
+}
+
+function closeArtwork() {
+    document.getElementById('artworkModal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+// ── Demo Payment Flow ──
+function openPayment(artId) {
+    const a = artworks[artId];
+    if (!a) return;
+    const modal = document.getElementById('paymentModal');
+    const content = document.getElementById('paymentContent');
+
+    content.innerHTML = `
+        <div style="text-align:center;margin-bottom:20px;">
+            <div style="font-size:1.3rem;font-weight:800;color:var(--text-primary,#fff);">🛒 Checkout</div>
+            <div style="font-size:.8rem;color:var(--text-muted,#888);margin-top:4px;">Purchasing "${a.title}" by ${a.artist}</div>
+        </div>
+        <div style="background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.15);border-radius:12px;padding:16px;margin-bottom:20px;display:flex;align-items:center;gap:12px;">
+            ${a.image ? `<img src="${a.image}" style="width:60px;height:60px;object-fit:cover;border-radius:8px;">` : ''}
+            <div style="flex:1;">
+                <div style="font-weight:700;color:var(--text-primary,#fff);font-size:.9rem;">${a.title}</div>
+                <div style="font-size:.75rem;color:var(--text-muted,#888);">${a.type}</div>
+            </div>
+            <div style="font-size:1.2rem;font-weight:800;color:#22c55e;">${parseFloat(a.price).toFixed(2)} TND</div>
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="font-size:.78rem;font-weight:600;color:var(--text-primary,#fff);display:block;margin-bottom:6px;">Full Name</label>
+            <input type="text" class="pay-input" id="payName" placeholder="John Doe" value="">
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="font-size:.78rem;font-weight:600;color:var(--text-primary,#fff);display:block;margin-bottom:6px;">Email Address</label>
+            <input type="email" class="pay-input" id="payEmail" placeholder="you@example.com">
+        </div>
+        <div style="margin-bottom:16px;">
+            <label style="font-size:.78rem;font-weight:600;color:var(--text-primary,#fff);display:block;margin-bottom:6px;">💳 Card Number</label>
+            <input type="text" class="pay-input" id="payCard" placeholder="4242 4242 4242 4242" maxlength="19" oninput="formatCard(this)">
+        </div>
+        <div class="pay-row">
+            <div>
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-primary,#fff);display:block;margin-bottom:6px;">Expiry</label>
+                <input type="text" class="pay-input" id="payExpiry" placeholder="MM/YY" maxlength="5" oninput="formatExpiry(this)">
+            </div>
+            <div>
+                <label style="font-size:.78rem;font-weight:600;color:var(--text-primary,#fff);display:block;margin-bottom:6px;">CVC</label>
+                <input type="text" class="pay-input" id="payCvc" placeholder="123" maxlength="3">
+            </div>
+        </div>
+        <button onclick="processPayment(${a.id})" class="btn btn-primary" style="width:100%;padding:14px;font-size:1rem;font-weight:700;border-radius:12px;margin-top:8px;">
+            Pay ${parseFloat(a.price).toFixed(2)} TND
+        </button>
+        <button onclick="closePayment()" style="width:100%;padding:10px;font-size:.85rem;background:none;border:none;color:var(--text-muted,#888);cursor:pointer;margin-top:8px;">Cancel</button>
+        <div style="text-align:center;margin-top:12px;font-size:.65rem;color:rgba(255,255,255,.25);">🔒 Demo payment — no real charges</div>
+    `;
+    modal.style.display = 'block';
+}
+
+function formatCard(el) {
+    let v = el.value.replace(/\D/g, '').substring(0, 16);
+    el.value = v.replace(/(.{4})/g, '$1 ').trim();
+}
+function formatExpiry(el) {
+    let v = el.value.replace(/\D/g, '').substring(0, 4);
+    if (v.length > 2) v = v.substring(0,2) + '/' + v.substring(2);
+    el.value = v;
+}
+
+function processPayment(artId) {
+    const name = document.getElementById('payName').value.trim();
+    const email = document.getElementById('payEmail').value.trim();
+    const card = document.getElementById('payCard').value.trim();
+    const cvc = document.getElementById('payCvc').value.trim();
+
+    if (!name || !email || card.length < 16 || cvc.length < 3) {
+        alert('Please fill in all payment fields correctly.');
+        return;
+    }
+
+    const a = artworks[artId];
+    const content = document.getElementById('paymentContent');
+
+    // Simulate processing
+    content.innerHTML = `
+        <div style="text-align:center;padding:40px 0;">
+            <div class="spinner" style="width:40px;height:40px;border:3px solid rgba(124,58,237,0.2);border-top-color:#7c3aed;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px;"></div>
+            <div style="font-size:1rem;font-weight:600;color:var(--text-primary,#fff);">Processing payment...</div>
+        </div>
+        <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    `;
+
+    // Simulate delay then success
+    setTimeout(() => {
+        content.innerHTML = `
+            <div class="pay-success">
+                <div class="check">✓</div>
+                <h3 style="font-size:1.2rem;font-weight:800;color:var(--text-primary,#fff);margin:0 0 8px;">Payment Successful! 🎉</h3>
+                <p style="font-size:.85rem;color:var(--text-muted,#888);margin:0 0 16px;">Thank you for purchasing <strong>"${a.title}"</strong></p>
+                <div style="background:rgba(34,197,94,0.1);border:1px solid rgba(34,197,94,0.2);border-radius:12px;padding:16px;margin:0 auto;max-width:320px;text-align:left;">
+                    <div style="font-size:.78rem;color:#22c55e;font-weight:600;margin-bottom:8px;">📧 Order Confirmation</div>
+                    <div style="font-size:.75rem;color:var(--text-muted,#888);line-height:1.6;">
+                        <div><strong>Order #</strong> VA-${Date.now().toString(36).toUpperCase()}</div>
+                        <div><strong>Artwork:</strong> ${a.title}</div>
+                        <div><strong>Artist:</strong> ${a.artist}</div>
+                        <div><strong>Amount:</strong> ${parseFloat(a.price).toFixed(2)} TND</div>
+                        <div><strong>Email:</strong> ${email}</div>
+                    </div>
+                </div>
+                <button onclick="closePayment();closeArtwork();" class="btn btn-primary" style="margin-top:20px;padding:12px 32px;border-radius:10px;">Done</button>
+            </div>
+        `;
+    }, 2000);
+}
+
+function closePayment() {
+    document.getElementById('paymentModal').style.display = 'none';
+}
+
+// Close modals with Escape key
+document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closePayment(); closeArtwork(); }
+});
+
+// ── Art Institute of Chicago API ──
+(function(){
+    const input = document.getElementById('articQuery');
+    const searchBtn = document.getElementById('articSearch');
+    const randomBtn = document.getElementById('articRandom');
+    const grid = document.getElementById('articResults');
+    const info = document.getElementById('articInfo');
+
+    async function searchArtic(query) {
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted,#888);font-size:.85rem;">Loading artworks…</div>';
+        info.textContent = '';
+        try {
+            const url = query
+                ? `{{ path('api_artic_artworks') }}?q=${encodeURIComponent(query)}&limit=12`
+                : `{{ path('api_artic_artworks') }}?limit=12&page=${Math.floor(Math.random()*100)+1}`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.error) { grid.innerHTML = `<div style="grid-column:1/-1;color:#f87171;padding:16px;">${data.error}</div>`; return; }
+            if (!data.results.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--text-muted);">No artworks found.</div>'; return; }
+            grid.innerHTML = data.results.map(a => `
+                <div class="gallery-card museum-card" style="background:var(--bg-card,#1e1e2e);border:1px solid var(--border,#333);border-radius:16px;overflow:hidden;transition:all 0.3s;">
+                    <div style="height:180px;overflow:hidden;display:flex;align-items:center;justify-content:center;background:rgba(124,58,237,0.05);">
+                        ${a.image_url 
+                            ? `<img src="${a.thumb_url}" alt="${a.title}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onclick="window.open('${a.image_url}','_blank')" onerror="this.style.display='none'">` 
+                            : '<i data-lucide="image" style="width:40px;height:40px;color:var(--text-muted);opacity:0.3;"></i>'}
+                    </div>
+                    <div style="padding:14px;">
+                        <div style="font-size:.85rem;font-weight:700;color:var(--text-primary,#fff);margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.title}</div>
+                        <div style="font-size:.72rem;color:var(--text-muted,#888);margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${a.artist}</div>
+                        <div style="font-size:.65rem;color:rgba(255,255,255,.3);">${a.date}${a.medium ? ' · ' + a.medium.substring(0,40) : ''}</div>
+                    </div>
+                </div>
+            `).join('');
+            info.innerHTML = `${data.total.toLocaleString()} artworks · Powered by <a href="https://www.artic.edu" target="_blank" style="color:var(--accent);">Art Institute of Chicago</a>`;
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;color:#f87171;padding:16px;">Failed to load artworks.</div>'; }
+    }
+
+    searchBtn.addEventListener('click', () => searchArtic(input.value.trim()));
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') searchArtic(input.value.trim()); });
+    randomBtn.addEventListener('click', () => searchArtic(''));
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,349 @@
+{% extends 'base.html.twig' %}
+{% block title %}Acoustic Music World — VirtuArts{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('css/aura-embed.css') }}">
+{% endblock %}
+
+{% block body %}
+<div class="mus-page">
+
+    {# ── TOPBAR ── #}
+    <div class="mus-topbar">
+        <a href="{{ path('app_user_dashboard') }}" class="mus-back">← Dashboard</a>
+        <div class="mus-topbar-title">
+            <span class="mus-topbar-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></span>
+            <span>Acoustic Music World</span>
+        </div>
+        <a href="{{ path('app_music_recordings') }}" class="mus-recordings-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg> {{ recordingCount }} Recording{{ recordingCount != 1 ? 's' : '' }}
+        </a>
+    </div>
+
+    {# ── HERO ── #}
+    <div class="mus-hero">
+        <div class="mus-hero-waves">
+            <svg viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M0,60 C200,100 400,20 600,60 C800,100 1000,20 1200,60 L1200,120 L0,120 Z" fill="rgba(249,115,22,0.08)"/>
+                <path d="M0,80 C150,40 350,100 550,70 C750,40 950,90 1200,55 L1200,120 L0,120 Z" fill="rgba(234,179,8,0.05)"/>
+            </svg>
+        </div>
+        <h1 class="mus-hero-title"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2" style="vertical-align:-4px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Acoustic &amp; Rhythmic World</h1>
+        <p class="mus-hero-sub">Play real instruments · Train your rhythm · Share your music with the world</p>
+        <div class="mus-hero-pills">
+            <span class="mus-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 4v16M10 4v16M14 4v16M18 4v16"/></svg> Piano</span>
+            <span class="mus-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M16 3v18l-8-4V7Z"/></svg> Guitar</span>
+            <span class="mus-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3"/></svg> Drums</span>
+            <span class="mus-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><path d="M12 8V4H8"/><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h4l2 4h2"/></svg> AI Coach</span>
+            <span class="mus-pill"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg> Community</span>
+        </div>
+    </div>
+
+    {# ── SECTION: INSTRUMENTS ── #}
+    <div class="mus-section">
+        <div class="mus-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg> Virtual Instruments</div>
+        <div class="mus-card-grid">
+
+            <a href="{{ path('app_music_piano') }}" class="mus-card mus-card-piano">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M6 4v16M10 4v16M14 4v16M18 4v16"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Piano</h3>
+                    <p>Grand acoustic piano</p>
+                </div>
+                <div class="mus-card-keys">
+                    {% for _ in 1..7 %}<div class="mus-mini-key"></div>{% endfor %}
+                </div>
+            </a>
+
+            <a href="{{ path('app_music_guitar') }}" class="mus-card mus-card-guitar">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><path d="M16 3v18l-8-4V7Z"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Guitar</h3>
+                    <p>Acoustic folk guitar</p>
+                </div>
+                <div class="mus-guitar-strings">
+                    {% for _ in 1..6 %}<div class="mus-string"></div>{% endfor %}
+                </div>
+            </a>
+
+            <a href="{{ path('app_music_drums') }}" class="mus-card mus-card-drums">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><ellipse cx="12" cy="8" rx="9" ry="4"/><path d="M3 8v6a9 4 0 0 0 18 0V8"/><path d="M3 14a9 4 0 0 0 18 0" opacity=".4"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Drums</h3>
+                    <p>Full drum kit pads</p>
+                </div>
+                <div class="mus-drum-preview">
+                    {% for _ in 1..4 %}<div class="mus-drum-pad"></div>{% endfor %}
+                </div>
+            </a>
+
+            <a href="{{ path('app_music_beat') }}" class="mus-card mus-card-beat">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3ZM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3Z"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Beat Maker</h3>
+                    <p>Step sequencer · Custom instruments · Export</p>
+                </div>
+                <div class="mus-beat-preview">
+                    {% for _ in 1..8 %}<div class="mus-beat-dot {{ loop.index in [1,3,5,7] ? 'on' : '' }}"></div>{% endfor %}
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    {# ── SECTION: AI TOOLS ── #}
+    <div class="mus-section">
+        <div class="mus-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M12 8V4H8"/><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M8 12h4l2 4h2"/></svg> AI Music Tools</div>
+        <div class="mus-card-grid mus-card-grid-2">
+
+            <a href="{{ path('app_music_harmony') }}" class="mus-card mus-card-harmony">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Harmony Assistant</h3>
+                    <p>AI chord suggestions &amp; progressions</p>
+                </div>
+                <div class="mus-harmony-preview">
+                    <span>I</span><span>V</span><span>vi</span><span>IV</span>
+                </div>
+            </a>
+
+            <a href="{{ path('app_music_rhythm') }}" class="mus-card mus-card-rhythm">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2"/><path d="M10 2h4"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Rhythm Training</h3>
+                    <p>Tap along · Score your timing · Level up</p>
+                </div>
+                <div class="mus-rhythm-preview">
+                    {% for _ in 1..4 %}<div class="mus-beat-pulse"></div>{% endfor %}
+                </div>
+            </a>
+
+        </div>
+    </div>
+
+    {# ── SECTION: AURA AI ASSISTANT ── #}
+    <div class="mus-section">
+        <div class="mus-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="m12 3-1.9 5.8a2 2 0 0 1-1.3 1.3L3 12l5.8 1.9a2 2 0 0 1 1.3 1.3L12 21l1.9-5.8a2 2 0 0 1 1.3-1.3L21 12l-5.8-1.9a2 2 0 0 1-1.3-1.3Z"/></svg> VirtuAi Music Mentor</div>
+        <div style="max-width:600px;">
+            {% include 'components/_aura_panel.html.twig' with { module: 'music' } %}
+        </div>
+    </div>
+
+    {# ── SECTION: SOCIAL ── #}
+    <div class="mus-section">
+        <div class="mus-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10"/></svg> Music Community</div>
+        <div class="mus-card-grid mus-card-grid-2">
+
+            <a href="{{ path('app_music_recordings') }}" class="mus-card mus-card-recordings">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>My Recordings</h3>
+                    <p>{{ recordingCount }} saved</p>
+                </div>
+            </a>
+
+            <a href="{{ path('app_music_tracks') }}" class="mus-card mus-card-tracks">
+                <div class="mus-card-icon"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 0 20" opacity=".3"/></svg></div>
+                <div class="mus-card-body">
+                    <h3>Tracks</h3>
+                    <p>Browse &amp; publish tracks</p>
+                </div>
+            </a>
+
+        </div>
+    </div>
+    {# ── SECTION: DEEZER MUSIC DISCOVERY ── #}
+    <div class="mus-section">
+        <div class="mus-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-2px"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3ZM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3Z"/></svg> Music Discovery (Deezer)</div>
+        <div style="display:flex;gap:8px;margin-bottom:16px;">
+            <input type="text" id="deezerQuery" placeholder="Search artists, tracks, albums…" style="flex:1;padding:10px 14px;font-size:.85rem;background:#16161c;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#fff;outline:none;">
+            <button id="deezerSearch" style="padding:10px 20px;background:rgba(249,115,22,.15);color:var(--color-primary);border:1px solid rgba(249,115,22,.3);border-radius:10px;font-weight:700;font-size:.82rem;cursor:pointer;white-space:nowrap;transition:all .2s;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:-1px"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg> Search</button>
+        </div>
+        <div id="deezerResults" class="mus-card-grid"></div>
+        <div id="deezerInfo" style="font-size:.65rem;color:var(--color-text-muted);margin-top:8px;"></div>
+    </div>
+
+</div>{# /mus-page #}
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+/* ══════════════════════════════════════
+   ACOUSTIC MUSIC WORLD — HUB STYLES
+   ══════════════════════════════════════ */
+.mus-page { background: #0d0d10; min-height: 100vh; padding-bottom: 60px; }
+
+/* Topbar */
+.mus-topbar {
+    display: flex; align-items: center; gap: 16px;
+    padding: 16px 32px;
+    background: rgba(255,255,255,.03);
+    border-bottom: 1px solid rgba(255,255,255,.07);
+}
+.mus-back { color: var(--color-text-muted); text-decoration: none; font-size: .85rem; }
+.mus-back:hover { color: var(--color-primary); }
+.mus-topbar-title {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 1.1rem; font-weight: 700; color: #fff; margin-right: auto;
+}
+.mus-topbar-icon { font-size: 1.4rem; }
+.mus-recordings-badge {
+    background: rgba(249,115,22,.15); color: var(--color-primary);
+    border: 1px solid rgba(249,115,22,.3); border-radius: 999px;
+    padding: 5px 14px; font-size: .8rem; font-weight: 700; text-decoration: none;
+    transition: all .2s;
+}
+.mus-recordings-badge:hover { background: rgba(249,115,22,.25); }
+
+/* Hero */
+.mus-hero {
+    position: relative; text-align: center;
+    padding: 48px 24px 36px; overflow: hidden;
+}
+.mus-hero-waves { position: absolute; bottom: 0; left: 0; width: 100%; height: 80px; }
+.mus-hero-waves svg { width: 100%; height: 100%; }
+.mus-hero-title { font-size: clamp(1.6rem, 4vw, 2.6rem); font-weight: 900; color: #fff; margin-bottom: 10px; }
+.mus-hero-sub { color: var(--color-text-muted); font-size: 1rem; margin-bottom: 20px; }
+.mus-hero-pills { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+.mus-pill {
+    background: rgba(249,115,22,.12); color: var(--color-primary);
+    border: 1px solid rgba(249,115,22,.25); border-radius: 999px;
+    padding: 4px 14px; font-size: .8rem; font-weight: 600;
+}
+
+/* Section */
+.mus-section { padding: 0 32px; margin-bottom: 40px; }
+.mus-section-label {
+    font-size: .7rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--color-primary); margin-bottom: 16px;
+    display: flex; align-items: center; gap: 8px;
+}
+.mus-section-label::after { content: ''; flex: 1; height: 1px; background: rgba(249,115,22,.2); }
+
+/* Card grid */
+.mus-card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 16px; }
+.mus-card-grid-2 { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); }
+
+/* Card base */
+.mus-card {
+    background: #16161c;
+    border: 1px solid rgba(255,255,255,.07);
+    border-radius: 18px;
+    padding: 24px;
+    text-decoration: none;
+    color: #fff;
+    display: flex; flex-direction: column; gap: 12px;
+    transition: all .25s; cursor: pointer; overflow: hidden; position: relative;
+}
+.mus-card:hover { transform: translateY(-4px); border-color: rgba(249,115,22,.4); box-shadow: 0 12px 40px rgba(249,115,22,.15); }
+.mus-card-icon { font-size: 2.4rem; line-height: 1; }
+.mus-card-body h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 3px; }
+.mus-card-body p  { font-size: .8rem; color: var(--color-text-muted); }
+
+/* Piano decoration */
+.mus-card-piano { background: linear-gradient(145deg, #1a1a24, #111118); }
+.mus-card-piano:hover { background: linear-gradient(145deg, #1e1e2e, #141420); }
+.mus-mini-key { display: inline-block; width: 22px; height: 54px; background: #f0f0f0; border-radius: 0 0 4px 4px; border: 1px solid #ccc; margin-right: 2px; }
+.mus-card-keys { display: flex; }
+
+/* Guitar decoration */
+.mus-card-guitar { background: linear-gradient(145deg, #1e150a, #150e06); }
+.mus-card-guitar:hover { background: linear-gradient(145deg, #231a0e, #1a1208); }
+.mus-guitar-strings { display: flex; flex-direction: column; gap: 5px; }
+.mus-string { height: 2px; background: linear-gradient(90deg, transparent, #c8a96e, transparent); border-radius: 2px; }
+
+/* Drums */
+.mus-card-drums { background: linear-gradient(145deg, #141218, #0e0c12); }
+.mus-card-drums:hover { background: linear-gradient(145deg, #1a1620, #121016); }
+.mus-drum-preview { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.mus-drum-pad { height: 28px; background: #2a2a36; border-radius: 6px; border: 1px solid rgba(255,255,255,.1); }
+
+/* Beat */
+.mus-card-beat { background: linear-gradient(145deg, #0e1420, #08101a); }
+.mus-beat-preview { display: flex; gap: 5px; align-items: center; }
+.mus-beat-dot { width: 12px; height: 12px; border-radius: 50%; background: #2a2a3a; border: 1px solid rgba(255,255,255,.1); }
+.mus-beat-dot.on { background: var(--color-primary); box-shadow: 0 0 8px rgba(249,115,22,.5); }
+
+/* Harmony */
+.mus-card-harmony { background: linear-gradient(145deg, #0e1a10, #08120a); }
+.mus-harmony-preview { display: flex; gap: 8px; }
+.mus-harmony-preview span {
+    width: 36px; height: 36px; border-radius: 8px;
+    background: rgba(34,197,94,.15); border: 1px solid rgba(34,197,94,.3);
+    display: flex; align-items: center; justify-content: center;
+    font-size: .75rem; font-weight: 700; color: #4ade80;
+}
+
+/* Rhythm */
+.mus-card-rhythm { background: linear-gradient(145deg, #1a100e, #120a08); }
+.mus-rhythm-preview { display: flex; gap: 8px; align-items: flex-end; }
+.mus-beat-pulse {
+    width: 12px; border-radius: 3px; background: var(--color-primary);
+    animation: rhythmPulse 1.2s ease-in-out infinite;
+}
+.mus-beat-pulse:nth-child(1) { height: 24px; animation-delay: 0s; }
+.mus-beat-pulse:nth-child(2) { height: 36px; animation-delay: .3s; }
+.mus-beat-pulse:nth-child(3) { height: 20px; animation-delay: .6s; }
+.mus-beat-pulse:nth-child(4) { height: 32px; animation-delay: .9s; }
+@keyframes rhythmPulse { 0%,100%{opacity:.4;transform:scaleY(0.6)} 50%{opacity:1;transform:scaleY(1)} }
+
+/* Recordings / Tracks */
+.mus-card-recordings { background: linear-gradient(145deg, #161220, #100e18); }
+.mus-card-tracks     { background: linear-gradient(145deg, #0e1620, #08101a); }
+
+</style>
+<script src="{{ asset('js/aura-embed.js') }}" defer></script>
+<script>
+// ── Deezer Music Discovery API ──
+(function(){
+    const input = document.getElementById('deezerQuery');
+    const btn = document.getElementById('deezerSearch');
+    const grid = document.getElementById('deezerResults');
+    const info = document.getElementById('deezerInfo');
+    let currentAudio = null;
+
+    async function searchDeezer() {
+        const q = input.value.trim();
+        if (!q) return;
+        grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--color-text-muted);font-size:.85rem;">Searching…</div>';
+        try {
+            const res = await fetch(`{{ path('api_deezer_search') }}?q=${encodeURIComponent(q)}&limit=8`);
+            const data = await res.json();
+            if (data.error) { grid.innerHTML = `<div style="grid-column:1/-1;color:#f87171;padding:16px;">${data.error}</div>`; return; }
+            if (!data.results.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:24px;color:var(--color-text-muted);">No tracks found.</div>'; return; }
+            grid.innerHTML = data.results.map(t => {
+                const mins = Math.floor(t.duration / 60);
+                const secs = String(t.duration % 60).padStart(2, '0');
+                return `
+                <div class="mus-card" style="flex-direction:row;gap:12px;padding:14px;cursor:default;">
+                    <img src="${t.cover}" alt="${t.album}" style="width:56px;height:56px;border-radius:10px;object-fit:cover;flex-shrink:0;">
+                    <div style="flex:1;overflow:hidden;min-width:0;">
+                        <div style="font-size:.85rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.title}</div>
+                        <div style="font-size:.75rem;color:var(--color-text-muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${t.artist} · ${t.album}</div>
+                        <div style="font-size:.65rem;color:rgba(255,255,255,.3);margin-top:2px;">${mins}:${secs}</div>
+                    </div>
+                    ${t.preview ? `<button class="dz-play" data-url="${t.preview}" style="width:36px;height:36px;border-radius:50%;border:1px solid rgba(249,115,22,.3);background:rgba(249,115,22,.1);color:var(--color-primary);font-size:.8rem;cursor:pointer;flex-shrink:0;">▶</button>` : ''}
+                </div>`;
+            }).join('');
+            info.innerHTML = `${data.total} results · Powered by <a href="https://www.deezer.com" target="_blank" style="color:var(--color-primary);">Deezer</a>`;
+            // Play handlers
+            grid.querySelectorAll('.dz-play').forEach(b => {
+                b.addEventListener('click', () => {
+                    if (currentAudio) { currentAudio.pause(); currentAudio = null; }
+                    if (b.textContent === '⏹') { b.textContent = '▶'; return; }
+                    grid.querySelectorAll('.dz-play').forEach(x => x.textContent = '▶');
+                    currentAudio = new Audio(b.dataset.url);
+                    currentAudio.play();
+                    b.textContent = '⏹';
+                    currentAudio.onended = () => { b.textContent = '▶'; currentAudio = null; };
+                });
+            });
+        } catch(e) { grid.innerHTML = '<div style="grid-column:1/-1;color:#f87171;padding:16px;">Failed to search.</div>'; }
+    }
+
+    btn.addEventListener('click', searchDeezer);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') searchDeezer(); });
+})();
+</script>
+{% endblock %}

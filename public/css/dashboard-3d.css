@@ -1,0 +1,1003 @@
+/* ═══════════════════════════════════════════════════════════════
+   dashboard-3d.css — Hyper-Premium Spatial Dashboard Styles
+   VirtuArts · Deep Charcoal + Amber + Gold
+═══════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────
+   GLOBAL DASHBOARD SCENE
+───────────────────────────────────── */
+.db3-page {
+    position: relative;
+    min-height: 100vh;
+    background: #0a0a0c;
+    overflow-x: hidden;
+    perspective: 1200px;
+}
+
+/* Animated mesh-gradient background */
+.db3-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(ellipse 80% 60% at 20% 10%, rgba(249,115,22,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 80% at 80% 80%, rgba(245,158,11,0.05) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 40% at 50% 50%, rgba(249,115,22,0.03) 0%, transparent 70%),
+        #0a0a0c;
+    animation: bgDrift 18s ease-in-out infinite alternate;
+}
+@keyframes bgDrift {
+    0%   { background-position: 0% 0%, 100% 100%, 50% 50%; }
+    100% { background-position: 10% 15%, 85% 90%, 55% 45%; }
+}
+
+.db3-container {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 100px 28px 80px; /* 72px navbar + 28px breathing room */
+}
+
+/* ─────────────────────────────────────
+   HEADER  (Z-axis entrance)
+───────────────────────────────────── */
+.db3-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 48px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid rgba(249,115,22,0.15);
+    transform-origin: top center;
+}
+.db3-header-left h1 {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    background: linear-gradient(135deg, #f97316 0%, #f59e0b 50%, #fde68a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 0;
+    line-height: 1.1;
+}
+.db3-header-left p {
+    font-size: 0.92rem;
+    color: #78716c;
+    margin: 8px 0 0;
+}
+.db3-header-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: rgba(249,115,22,0.08);
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f97316;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    white-space: nowrap;
+}
+
+/* ─────────────────────────────────────
+   STAT CARDS — Glassmorphic Bento
+───────────────────────────────────── */
+.db3-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+}
+
+.db3-stat-card {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 20px;
+    padding: 28px 24px;
+    overflow: hidden;
+    cursor: default;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    will-change: transform;
+    transform-style: preserve-3d;
+}
+.db3-stat-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 20px;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+        rgba(249,115,22,0.12) 0%, transparent 60%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.db3-stat-card:hover::before { opacity: 1; }
+.db3-stat-card:hover {
+    border-color: rgba(249,115,22,0.4);
+    box-shadow: 0 0 40px rgba(249,115,22,0.1), 0 20px 60px rgba(0,0,0,0.4);
+}
+
+.db3-stat-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(245,158,11,0.08));
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 16px;
+    color: #f97316;
+}
+.db3-stat-icon svg { width: 20px; height: 20px; }
+
+.db3-stat-value {
+    font-size: 2.8rem;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    background: linear-gradient(135deg, #f5f5f4, #d6d3d1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    margin-bottom: 6px;
+}
+.db3-stat-value.success { background: linear-gradient(135deg, #4ade80, #22c55e); -webkit-background-clip: text; background-clip: text; }
+.db3-stat-value.warning { background: linear-gradient(135deg, #f97316, #f59e0b); -webkit-background-clip: text; background-clip: text; }
+.db3-stat-value.danger  { background: linear-gradient(135deg, #f87171, #ef4444); -webkit-background-clip: text; background-clip: text; }
+
+.db3-stat-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #78716c;
+}
+
+/* Decorative glow orb in corner */
+.db3-stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: -20px;
+    right: -20px;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(249,115,22,0.12) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* ─────────────────────────────────────
+   GAMIFICATION BAR (3D)
+───────────────────────────────────── */
+.db3-gam-bar {
+    display: flex;
+    align-items: stretch;
+    gap: 1px;
+    background: rgba(249,115,22,0.1);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 40px;
+}
+.db3-gam-item {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 18px 12px;
+    background: rgba(10,10,12,0.8);
+    transition: background 0.2s;
+}
+.db3-gam-item:hover { background: rgba(249,115,22,0.06); }
+.db3-gam-item:not(:last-child) { border-right: 1px solid rgba(249,115,22,0.1); }
+.db3-gam-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #78716c;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.db3-gam-label svg { width: 12px; height: 12px; }
+.db3-gam-value {
+    font-size: 1.6rem;
+    font-weight: 900;
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    color: #f5f5f4;
+}
+
+/* ─────────────────────────────────────
+   SECTION HEADER
+───────────────────────────────────── */
+.db3-section-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.db3-section-title h2 {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #d6d3d1;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.db3-section-title .db3-section-icon {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, rgba(249,115,22,0.15), rgba(245,158,11,0.08));
+    border: 1px solid rgba(249,115,22,0.2);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #f97316;
+    flex-shrink: 0;
+}
+.db3-section-title .db3-section-icon svg { width: 16px; height: 16px; }
+.db3-section-line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(to right, rgba(249,115,22,0.2), transparent);
+}
+
+/* ─────────────────────────────────────
+   BENTO QUICK-ACTION GRID
+───────────────────────────────────── */
+.db3-bento-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 12px;
+    margin-bottom: 48px;
+}
+.db3-bento-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 28px 16px;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    text-decoration: none;
+    color: #a8a29e;
+    cursor: pointer;
+    overflow: hidden;
+    transition: color 0.3s, border-color 0.3s, box-shadow 0.3s;
+    will-change: transform;
+    transform-style: preserve-3d;
+}
+.db3-bento-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: 18px;
+    background: radial-gradient(circle at var(--mx, 50%) var(--my, 50%),
+        rgba(249,115,22,0.1) 0%, transparent 65%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+.db3-bento-card:hover::before { opacity: 1; }
+.db3-bento-card:hover {
+    color: #f97316;
+    border-color: rgba(249,115,22,0.35);
+    box-shadow: 0 8px 40px rgba(249,115,22,0.12), 0 0 0 1px rgba(249,115,22,0.1);
+}
+.db3-bento-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(249,115,22,0.08);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s, border-color 0.3s;
+}
+.db3-bento-card:hover .db3-bento-icon {
+    background: rgba(249,115,22,0.15);
+    border-color: rgba(249,115,22,0.4);
+}
+.db3-bento-icon svg { width: 22px; height: 22px; }
+.db3-bento-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* ─────────────────────────────────────
+   PREMIUM BUTTONS — Magnetic/Gradient
+───────────────────────────────────── */
+.db3-btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    overflow: hidden;
+    transition: box-shadow 0.3s, transform 0.2s;
+    will-change: transform;
+    text-decoration: none;
+    white-space: nowrap;
+}
+.db3-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent 60%);
+    border-radius: 999px;
+}
+.db3-btn-primary {
+    background: linear-gradient(135deg, #f97316, #f59e0b);
+    color: #000;
+    box-shadow: 0 4px 20px rgba(249,115,22,0.35);
+}
+.db3-btn-primary:hover {
+    box-shadow: 0 8px 32px rgba(249,115,22,0.55), 0 0 0 1px rgba(249,115,22,0.4);
+}
+.db3-btn-danger {
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(239,68,68,0.3);
+}
+.db3-btn-danger:hover { box-shadow: 0 8px 28px rgba(239,68,68,0.5); }
+
+.db3-btn-success {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(34,197,94,0.3);
+}
+.db3-btn-success:hover { box-shadow: 0 8px 28px rgba(34,197,94,0.5); }
+
+.db3-btn-ghost {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #a8a29e;
+}
+.db3-btn-ghost:hover {
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(249,115,22,0.3);
+    color: #f97316;
+}
+.db3-btn svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+.db3-btn-sm {
+    padding: 6px 16px;
+    font-size: 0.76rem;
+    border-radius: 999px;
+}
+
+/* ─────────────────────────────────────
+   DEPTH TABLES — Floating Glass Slabs
+───────────────────────────────────── */
+.db3-table-wrap {
+    overflow-x: auto;
+    border-radius: 20px;
+    border: 1px solid rgba(249,115,22,0.1);
+    background: rgba(255,255,255,0.02);
+    backdrop-filter: blur(12px);
+    -webkit-overflow-scrolling: touch;
+}
+/* Ensure first column (ID) is never hidden */
+.db3-table td:first-child,
+.db3-table th:first-child {
+    padding-left: 16px;
+    min-width: 40px;
+}
+.db3-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.84rem;
+    table-layout: auto;
+    min-width: 600px; /* prevents columns from squishing below readable width */
+}
+.db3-table thead th {
+    text-align: left;
+    padding: 10px 16px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: #78716c;
+    background: rgba(249,115,22,0.04);
+    border-bottom: 1px solid rgba(249,115,22,0.1);
+    white-space: nowrap;
+}
+.db3-table thead th:first-child { border-radius: 20px 0 0 0; }
+.db3-table thead th:last-child  { border-radius: 0 20px 0 0; }
+
+.db3-table tbody tr {
+    transition: background 0.2s, transform 0.25s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.25s;
+    will-change: transform;
+}
+.db3-table tbody tr:hover {
+    background: rgba(249,115,22,0.05);
+    transform: translateZ(4px) scale(1.002);
+    box-shadow: 0 4px 24px rgba(249,115,22,0.08);
+    position: relative;
+    z-index: 2;
+}
+.db3-table tbody td {
+    padding: 9px 16px;
+    color: #a8a29e;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    vertical-align: middle;
+}
+.db3-table tbody tr:last-child td { border-bottom: none; }
+.db3-table tbody tr:last-child td:first-child { border-radius: 0 0 0 20px; }
+.db3-table tbody tr:last-child td:last-child  { border-radius: 0 0 20px 0; }
+
+.db3-table .row-blocked td { background: rgba(239,68,68,0.03); }
+.db3-table .td-bold { font-weight: 700; color: #d6d3d1; }
+.db3-table .td-dim  { font-size: 0.78rem; color: #57534e; }
+.db3-table .td-mono { font-family: monospace; font-size: 0.78rem; }
+
+/* ─────────────────────────────────────
+   STATUS PILLS — glowing pulses
+───────────────────────────────────── */
+.db3-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    white-space: nowrap;
+}
+.db3-status::before {
+    content: '';
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+.db3-status.pending  {
+    background: rgba(245,158,11,0.12);
+    color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.25);
+}
+.db3-status.pending::before  { background: #f59e0b; box-shadow: 0 0 6px #f59e0b; animation: pulse-gold 1.5s infinite; }
+.db3-status.accepted {
+    background: rgba(34,197,94,0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.25);
+}
+.db3-status.accepted::before { background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+.db3-status.refused, .db3-status.blocked  {
+    background: rgba(239,68,68,0.1);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.25);
+}
+.db3-status.refused::before, .db3-status.blocked::before { background: #f87171; box-shadow: 0 0 6px #f87171; }
+.db3-status.active {
+    background: rgba(34,197,94,0.1);
+    color: #4ade80;
+    border: 1px solid rgba(34,197,94,0.2);
+}
+.db3-status.active::before { background: #4ade80; animation: pulse-green 2s infinite; }
+.db3-status.blocked-mod {
+    background: rgba(239,68,68,0.1);
+    color: #f87171;
+    border: 1px solid rgba(239,68,68,0.2);
+}
+.db3-status.blocked-mod::before { background: #f87171; }
+
+@keyframes pulse-gold  { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+@keyframes pulse-green { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+
+/* ─────────────────────────────────────
+   ROLE BADGES
+───────────────────────────────────── */
+.db3-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.db3-role.admin       { background: rgba(139,92,246,0.12); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
+.db3-role.superviseur { background: rgba(59,130,246,0.12); color: #60a5fa; border: 1px solid rgba(59,130,246,0.25); }
+.db3-role.user        { background: rgba(255,255,255,0.06); color: #78716c; border: 1px solid rgba(255,255,255,0.08); }
+
+/* ─────────────────────────────────────
+   GLASS FORM CARD
+───────────────────────────────────── */
+.db3-form-card {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 20px;
+    padding: 32px;
+    overflow: hidden;
+    margin-bottom: 48px;
+}
+.db3-form-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(249,115,22,0.4), transparent);
+    pointer-events: none;
+}
+.db3-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+@media (max-width: 600px) {
+    .db3-form-row { grid-template-columns: 1fr; }
+}
+.db3-form-group { display: flex; flex-direction: column; gap: 6px; }
+.db3-form-group label {
+    font-size: 0.73rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #78716c;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.db3-form-group label svg { width: 12px; height: 12px; }
+.db3-form-group input,
+.db3-form-group select,
+.db3-form-group textarea {
+    width: 100%;
+    padding: 10px 16px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: #f5f5f4;
+    font-size: 0.88rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+}
+.db3-form-group input:focus,
+.db3-form-group select:focus,
+.db3-form-group textarea:focus {
+    border-color: rgba(249,115,22,0.5);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.1);
+    outline: none;
+}
+.db3-form-group input::placeholder,
+.db3-form-group textarea::placeholder { color: #57534e; }
+.db3-form-group select option { background: #1a1a1e; color: #f5f5f4; }
+
+/* ─────────────────────────────────────
+   TAB NAVIGATION
+───────────────────────────────────── */
+.db3-tabs {
+    display: flex;
+    gap: 4px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 14px;
+    padding: 4px;
+    margin-bottom: 32px;
+    overflow-x: auto;
+}
+.db3-tab {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 10px;
+    background: none;
+    color: #78716c;
+    font-size: 0.84rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s;
+}
+.db3-tab svg { width: 15px; height: 15px; }
+.db3-tab.active {
+    background: linear-gradient(135deg, rgba(249,115,22,0.2), rgba(245,158,11,0.1));
+    color: #f97316;
+    box-shadow: 0 0 0 1px rgba(249,115,22,0.25);
+}
+.db3-tab:not(.active):hover { background: rgba(255,255,255,0.04); color: #d6d3d1; }
+.db3-tab-panel { display: none; }
+.db3-tab-panel.active { display: block; }
+
+/* ─────────────────────────────────────
+   SUBMISSION CARDS (review panel)
+───────────────────────────────────── */
+.db3-sub-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.db3-sub-card {
+    display: grid;
+    grid-template-columns: 90px 1fr auto;
+    gap: 20px;
+    align-items: start;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 18px 20px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.db3-sub-card:hover {
+    border-color: rgba(249,115,22,0.2);
+    box-shadow: 0 4px 24px rgba(249,115,22,0.06);
+}
+.db3-sub-thumb {
+    width: 90px; height: 72px;
+    background: rgba(249,115,22,0.06);
+    border: 1px solid rgba(249,115,22,0.12);
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #57534e;
+    flex-shrink: 0;
+}
+.db3-sub-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.db3-sub-thumb svg { width: 28px; height: 28px; }
+.db3-sub-info h3 { font-size: 0.95rem; font-weight: 700; color: #f5f5f4; margin: 0 0 6px; }
+.db3-sub-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    font-size: 0.76rem;
+    color: #78716c;
+    margin-bottom: 8px;
+}
+.db3-sub-meta svg { width: 11px; height: 11px; }
+.db3-sub-actions { display: flex; flex-direction: column; gap: 8px; min-width: 160px; }
+.db3-sub-action-form input {
+    width: 100%;
+    padding: 6px 12px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    color: #f5f5f4;
+    font-size: 0.76rem;
+    margin-bottom: 6px;
+    box-sizing: border-box;
+}
+.db3-sub-action-form input::placeholder { color: #57534e; }
+
+/* ─────────────────────────────────────
+   MODULE CARDS GRID
+───────────────────────────────────── */
+.db3-module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 48px;
+}
+.db3-module-card {
+    position: relative;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    will-change: transform;
+    transform-style: preserve-3d;
+    display: flex;
+    flex-direction: column;
+}
+.db3-module-card:hover {
+    border-color: rgba(249,115,22,0.25);
+    box-shadow: 0 8px 40px rgba(249,115,22,0.1);
+}
+.db3-module-card-top {
+    padding: 20px;
+    flex: 1;
+    text-decoration: none;
+    display: block;
+}
+.db3-module-card-top:hover { text-decoration: none; }
+.db3-module-emoji-box {
+    width: 48px; height: 48px;
+    background: rgba(249,115,22,0.08);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 14px;
+    color: #f97316;
+}
+.db3-module-emoji-box svg { width: 24px; height: 24px; }
+.db3-module-name { font-size: 0.95rem; font-weight: 700; color: #f5f5f4; margin: 0 0 4px; }
+.db3-module-super { font-size: 0.76rem; color: #78716c; margin-bottom: 12px; }
+.db3-module-open { display: flex; align-items: center; gap: 6px; font-size: 0.76rem; font-weight: 700; color: #f97316; opacity: 0; transition: opacity 0.2s; }
+.db3-module-card:hover .db3-module-open { opacity: 1; }
+.db3-module-open svg { width: 12px; height: 12px; }
+.db3-module-footer {
+    padding: 12px 20px;
+    border-top: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+/* ─────────────────────────────────────
+   BLOCK MODAL — Premium
+───────────────────────────────────── */
+.db3-modal-overlay {
+    position: fixed; inset: 0; z-index: 10000;
+    background: rgba(0,0,0,0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex; align-items: center; justify-content: center;
+    animation: dbModalFadeIn 0.2s ease;
+}
+@keyframes dbModalFadeIn { from { opacity:0 } to { opacity:1 } }
+
+.db3-modal {
+    background: #1e1e24;
+    border: 1px solid rgba(249,115,22,0.25);
+    border-radius: 24px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.7), 0 0 80px rgba(0,0,0,0.4), 0 0 0 1px rgba(249,115,22,0.15);
+    overflow: hidden;
+    animation: dbModalSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes dbModalSlideUp {
+    from { transform: translateY(30px) scale(0.96); opacity:0; }
+    to   { transform: translateY(0) scale(1); opacity:1; }
+}
+.db3-modal-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    background: rgba(239,68,68,0.06);
+}
+.db3-modal-header h3 {
+    display: flex; align-items: center; gap: 10px;
+    margin: 0; font-size: 1rem; font-weight: 800; color: #f87171;
+}
+.db3-modal-header h3 svg { width: 18px; height: 18px; }
+.db3-modal-close {
+    background: rgba(255,255,255,0.06); border: none;
+    width: 30px; height: 30px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; color: #78716c; font-size: 1.1rem;
+    transition: background 0.2s, color 0.2s;
+}
+.db3-modal-close:hover { background: rgba(255,255,255,0.1); color: #f5f5f4; }
+.db3-modal-body { padding: 24px; }
+.db3-modal-body p { font-size: 0.88rem; color: #a8a29e; line-height: 1.6; margin: 0 0 16px; }
+.db3-modal-confirm {
+    display: flex; align-items: center; gap: 10px;
+    padding: 14px; background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+    margin: 16px 0; cursor: pointer; font-size: 0.85rem; color: #a8a29e;
+}
+.db3-modal-confirm input { width: 16px; height: 16px; accent-color: #f97316; flex-shrink: 0; }
+.db3-modal-footer {
+    display: flex; gap: 10px; justify-content: flex-end;
+    padding: 16px 24px;
+    border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ─────────────────────────────────────
+   SEARCH INPUT
+───────────────────────────────────── */
+.db3-search {
+    position: relative;
+    margin-bottom: 20px;
+}
+.db3-search svg {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px; height: 16px;
+    color: #57534e;
+    pointer-events: none;
+}
+.db3-search input {
+    width: 100%;
+    padding: 10px 16px 10px 42px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    color: #f5f5f4;
+    font-size: 0.88rem;
+    max-width: 400px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.db3-search input:focus {
+    outline: none;
+    border-color: rgba(249,115,22,0.4);
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.08);
+}
+.db3-search input::placeholder { color: #57534e; }
+
+/* ─────────────────────────────────────
+   EMPTY STATE
+───────────────────────────────────── */
+.db3-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 60px 20px;
+    color: #57534e;
+    text-align: center;
+}
+.db3-empty svg { width: 40px; height: 40px; opacity: 0.4; }
+.db3-empty p { font-size: 0.88rem; margin: 0; }
+
+/* ─────────────────────────────────────
+   SCROLL-REVEAL INITIAL STATES
+   (GSAP will animate these)
+───────────────────────────────────── */
+.db3-reveal {
+    opacity: 0;
+    transform: translateY(40px) translateZ(-60px) rotateX(8deg);
+}
+.db3-reveal-left {
+    opacity: 0;
+    transform: translateX(-50px) translateZ(-40px);
+}
+.db3-reveal-right {
+    opacity: 0;
+    transform: translateX(50px) translateZ(-40px);
+}
+
+/* ─────────────────────────────────────
+   FLASH MESSAGES
+───────────────────────────────────── */
+.db3-flash-wrap {
+    margin-bottom: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.db3-flash {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    animation: dbFlashIn 0.4s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes dbFlashIn {
+    from { opacity:0; transform:translateY(-10px) scale(0.97); }
+    to   { opacity:1; transform:translateY(0) scale(1); }
+}
+.db3-flash svg { width: 15px; height: 15px; flex-shrink: 0; }
+.db3-flash.success { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.2); color: #4ade80; }
+.db3-flash.error   { background: rgba(239,68,68,0.1);  border: 1px solid rgba(239,68,68,0.2);  color: #f87171; }
+.db3-flash.warning { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.2); color: #fbbf24; }
+
+/* ─────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────── */
+@media (max-width: 768px) {
+    .db3-container { padding: 24px 16px 60px; }
+    .db3-header { flex-direction: column; align-items: flex-start; }
+    .db3-sub-card { grid-template-columns: 1fr; }
+    .db3-sub-thumb { width: 100%; height: 120px; }
+    .db3-gam-bar { flex-wrap: wrap; }
+    .db3-gam-item { min-width: 80px; }
+    .db3-tabs { padding: 4px 2px; }
+    .db3-tab { padding: 8px 14px; font-size: 0.78rem; }
+}
+
+/* ─────────────────────────────────────
+   FORM CARD (Profile, Workshop, etc.)
+───────────────────────────────────── */
+.db3-form-card {
+    background: rgba(20,20,24,0.7);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 20px;
+    padding: 28px;
+    backdrop-filter: blur(10px);
+}
+
+.db3-form-group {
+    display: flex; flex-direction: column; gap: 6px; flex: 1;
+}
+.db3-form-group label {
+    font-size: 0.76rem; font-weight: 700; color: #a8a29e;
+    display: flex; align-items: center; gap: 6px;
+}
+.db3-form-group label i { width: 14px; height: 14px; }
+
+.db3-form-group input[type="text"],
+.db3-form-group input[type="email"],
+.db3-form-group input[type="password"],
+.db3-form-group input[type="time"],
+.db3-form-group input[type="file"],
+.db3-form-group textarea,
+.db3-form-group select {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 14px;
+    color: #f5f5f4;
+    font-size: 0.84rem;
+    font-family: inherit;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+}
+.db3-form-group input:focus,
+.db3-form-group textarea:focus,
+.db3-form-group select:focus {
+    border-color: rgba(249,115,22,0.4);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(249,115,22,0.08);
+}
+
+.db3-form-row {
+    display: flex; gap: 16px; margin-bottom: 16px;
+}
+
+/* Primary button style */
+.db3-btn-primary {
+    background: linear-gradient(135deg,#f97316,#f59e0b);
+    color: #000; font-weight: 700;
+    border: none; border-radius: 999px;
+    padding: 10px 20px; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.2s; font-size: 0.82rem;
+}
+.db3-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(249,115,22,0.35);
+}
+
+/* ─────────────────────────────────────
+   AURA ACTION RESULTS
+───────────────────────────────────── */
+.aura-action-result {
+    margin-top: 10px;
+    padding: 12px;
+    background: rgba(249,115,22,0.06);
+    border: 1px solid rgba(249,115,22,0.15);
+    border-radius: 10px;
+}

@@ -1,0 +1,102 @@
+{#
+    ═══════════════════════════════════════════════════════════════════
+    VirtuArts — Signature Hero (brand-aligned, stable layout)
+    -------------------------------------------------------------------
+    • Single-line headline: "Unleash your [MORPH]" on one row, anchored
+      tagline below. No split-pan — layout is deterministic at any size.
+    • A soft orange/amber ambient glow replaces the old media card so
+      nothing fights the content for center stage.
+    • Gooey-filter word morphs through creative disciplines.
+    • Subtle parallax on the glow + scroll hint (no scroll-lock).
+
+    Params (all optional):
+      hero_eyebrow : kicker text above the title
+      hero_words   : array of words to cycle in the gooey slot
+    ═══════════════════════════════════════════════════════════════════
+#}
+{% set hero_eyebrow = hero_eyebrow|default('Virtual Youth Arts House') %}
+{% set hero_words   = hero_words|default(['Art', 'Music', 'Stories', 'Pixels', 'Dreams']) %}
+
+<section class="va-hero" data-hero-scroll-expand aria-label="VirtuArts hero">
+    {# SVG filter powering the gooey morph effect #}
+    <svg class="va-hero__goo-defs" aria-hidden="true" focusable="false">
+        <defs>
+            <filter id="va-hero-goo">
+                <feColorMatrix in="SourceGraphic" type="matrix"
+                               values="1 0 0 0 0
+                                       0 1 0 0 0
+                                       0 0 1 0 0
+                                       0 0 0 255 -140"/>
+            </filter>
+        </defs>
+    </svg>
+
+    {# Ambient orange glow (parallax target) + starfield vignette #}
+    <div class="va-hero__aura" aria-hidden="true">
+        <div class="va-hero__orb" data-hero-se-orb></div>
+        <div class="va-hero__grid"></div>
+    </div>
+
+    <div class="va-hero__inner">
+        {# Trust / brand kicker #}
+        <div class="va-hero__eyebrow">
+            <i data-lucide="sparkles" class="va-hero__eyebrow-icon"></i>
+            <span>{{ hero_eyebrow }}</span>
+        </div>
+
+        {# Headline — single row, gooey word inline #}
+        <h1 class="va-hero__title">
+            <span class="va-hero__title-static">Unleash your</span>
+            <span class="va-hero__goo-slot" aria-live="polite">
+                <span class="va-hero__goo-stage" style="filter:url(#va-hero-goo)">
+                    <span class="va-hero__goo-word" data-hero-se-word-a>{{ hero_words[0] }}</span>
+                    <span class="va-hero__goo-word" data-hero-se-word-b>{{ hero_words[1] ?? hero_words[0] }}</span>
+                </span>
+                <span class="sr-only">{{ hero_words|join(', ') }}</span>
+            </span>
+        </h1>
+        <p class="va-hero__tagline">at VirtuArts.</p>
+
+        <p class="va-hero__subtitle">
+            Draw, write, compose, and build together in one immersive
+            creative suite for young artists.
+        </p>
+
+        <div class="va-hero__ctas">
+            {% if app.user is defined and app.user %}
+                <a href="{{ path('app_user_dashboard') }}" class="btn btn-primary btn-lg">
+                    <i data-lucide="layout-dashboard" class="btn-icon"></i> Enter the Studio
+                </a>
+                <a href="#features" class="btn btn-outline btn-lg">
+                    <i data-lucide="compass" class="btn-icon"></i> Explore Modules
+                </a>
+            {% else %}
+                <a href="{{ path('app_register') }}" class="btn btn-primary btn-lg">
+                    <i data-lucide="sparkles" class="btn-icon"></i> Join VirtuArts
+                </a>
+                <a href="{{ path('app_login') }}" class="btn btn-outline btn-lg">
+                    <i data-lucide="log-in" class="btn-icon"></i> Sign In
+                </a>
+            {% endif %}
+        </div>
+
+        {# Discipline chips (matches the site's existing stat-item pattern but tidy) #}
+        <ul class="va-hero__chips">
+            <li class="va-hero__chip"><i data-lucide="palette"></i><span>Drawing</span></li>
+            <li class="va-hero__chip"><i data-lucide="book-open"></i><span>Writing</span></li>
+            <li class="va-hero__chip"><i data-lucide="music"></i><span>Music</span></li>
+            <li class="va-hero__chip"><i data-lucide="gamepad-2"></i><span>Pixel Art</span></li>
+            <li class="va-hero__chip"><i data-lucide="boxes"></i><span>3D Shapes</span></li>
+        </ul>
+    </div>
+
+    {# Scroll hint at the bottom, anchored to the section #}
+    <a href="#videoTutorial" class="va-hero__hint" data-hero-se-hint aria-label="Scroll to next section">
+        <i data-lucide="mouse" class="va-hero__hint-icon"></i>
+        <span>Scroll to explore</span>
+        <i data-lucide="chevron-down" class="va-hero__hint-chev"></i>
+    </a>
+
+    {# Word list consumed by assets/hero-scroll-expand.js #}
+    <script type="application/json" data-hero-se-words>{{ hero_words|json_encode|raw }}</script>
+</section>

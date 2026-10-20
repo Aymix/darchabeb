@@ -1,0 +1,175 @@
+{% extends 'base.html.twig' %}
+{% block title %}Acoustic Tracks — VirtuArts{% endblock %}
+
+{% block body %}
+<div class="mus-page">
+<div class="mus-topbar">
+    <a href="{{ path('app_music_studio') }}" class="mus-back">← Acoustic Hub</a>
+    <div class="mus-topbar-title"><span>💿</span><span>Acoustic Tracks</span></div>
+    <a href="{{ path('app_music_recordings') }}" class="mus-top-link">+ New Track</a>
+</div>
+
+<div class="tracks-wrap">
+
+    {# ── Filter bar ── #}
+    <form method="get" action="{{ path('app_music_tracks') }}" class="tracks-filter">
+        <input type="text" name="title"   class="filter-input" placeholder="Search title…"
+               value="{{ filters.title ?? '' }}">
+        <input type="text" name="genre"   class="filter-input" placeholder="Genre…"
+               value="{{ filters.genre ?? '' }}">
+        <input type="number" name="min_bpm" class="filter-input filter-bpm" placeholder="Min BPM"
+               value="{{ filters.minBpm ?? '' }}">
+        <input type="number" name="max_bpm" class="filter-input filter-bpm" placeholder="Max BPM"
+               value="{{ filters.maxBpm ?? '' }}">
+        <button type="submit" class="filter-btn">Filter</button>
+        <a href="{{ path('app_music_tracks') }}" class="filter-reset">Reset</a>
+    </form>
+
+    {# ── MY TRACKS ── #}
+    <div class="tracks-section">
+        <div class="tracks-section-title">My Tracks</div>
+        {% if myTracks is empty %}
+            <p class="tracks-empty">You haven't published any tracks yet. <a href="{{ path('app_music_recordings') }}">Go to your recordings</a> to publish one.</p>
+        {% else %}
+            <div class="tracks-grid">
+                {% for track in myTracks %}
+                <div class="track-card track-card-mine">
+                    <div class="track-icon">{{ track.instrumentEmoji }}</div>
+                    <div class="track-info">
+                        <h3 class="track-title">{{ track.title }}</h3>
+                        <p class="track-meta">
+                            {{ track.instrument|capitalize }}
+                            {% if track.genre %} · {{ track.genre }}{% endif %}
+                            {% if track.bpm %} · {{ track.bpm }} BPM{% endif %}
+                            {% if track.durationSeconds %} · {{ track.durationSeconds }}s{% endif %}
+                        </p>
+                        <p class="track-date">{{ track.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                    <div class="track-actions">
+                        <div class="track-visibility {{ track.isPublic ? 'public' : 'private' }}">
+                            {{ track.isPublic ? '🌍 Public' : '🔒 Private' }}
+                        </div>
+                        <div class="track-likes">❤️ {{ track.likes }}</div>
+                        <form method="post" action="{{ path('app_music_track_delete', {id: track.id}) }}"
+                              onsubmit="return confirm('Delete this track?')">
+                            <button type="submit" class="track-del-btn">🗑️</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+    {# ── COMMUNITY TRACKS ── #}
+    <div class="tracks-section">
+        <div class="tracks-section-title">Community Tracks</div>
+        {% if communityTracks is empty %}
+            <p class="tracks-empty">No public tracks match your filters.</p>
+        {% else %}
+            <div class="tracks-grid">
+                {% for track in communityTracks %}
+                <div class="track-card">
+                    <div class="track-icon">{{ track.instrumentEmoji }}</div>
+                    <div class="track-info">
+                        <h3 class="track-title">{{ track.title }}</h3>
+                        <p class="track-author">👤 {{ track.user.firstName }} {{ track.user.lastName|slice(0,1) }}.</p>
+                        <p class="track-meta">
+                            {{ track.instrument|capitalize }}
+                            {% if track.genre %} · {{ track.genre }}{% endif %}
+                            {% if track.bpm %} · {{ track.bpm }} BPM{% endif %}
+                            {% if track.durationSeconds %} · {{ track.durationSeconds }}s{% endif %}
+                        </p>
+                        <p class="track-date">{{ track.createdAt|date('d/m/Y') }}</p>
+                    </div>
+                    <div class="track-actions">
+                        <button class="track-like-btn" data-id="{{ track.id }}" data-likes="{{ track.likes }}">
+                            ❤️ <span class="like-count">{{ track.likes }}</span>
+                        </button>
+                        {% if track.user.id != app.user.id %}
+                            <a href="{{ path('app_museum_submit') }}?type=music&title={{ track.title|url_encode }}"
+                               class="track-museum-btn" title="Submit to Museum">🏛️</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+.mus-page { background:#0d0d10; min-height:100vh; }
+.mus-topbar { display:flex; align-items:center; gap:16px; padding:14px 28px; background:rgba(255,255,255,.03); border-bottom:1px solid rgba(255,255,255,.07); }
+.mus-back { color:var(--color-text-muted); text-decoration:none; font-size:.85rem; } .mus-back:hover{color:var(--color-primary);}
+.mus-topbar-title { display:flex; align-items:center; gap:10px; font-size:1.15rem; font-weight:800; color:#fff; margin-right:auto; }
+.mus-top-link { background:var(--color-primary); color:#fff; text-decoration:none; font-size:.8rem; font-weight:700; padding:7px 16px; border-radius:999px; transition:all .2s; }
+.mus-top-link:hover { background:var(--color-primary-dark); }
+
+.tracks-wrap { padding:24px 32px; display:flex; flex-direction:column; gap:28px; }
+
+/* Filter bar */
+.tracks-filter { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+.filter-input { background:#1a1a22; border:1px solid rgba(255,255,255,.1); border-radius:10px; color:#fff; padding:8px 13px; font-size:.85rem; outline:none; transition:border-color .2s; }
+.filter-input:focus { border-color:rgba(249,115,22,.5); }
+.filter-bpm { width:100px; }
+.filter-btn { padding:8px 18px; background:rgba(249,115,22,.15); color:var(--color-primary); border:1px solid rgba(249,115,22,.3); border-radius:10px; cursor:pointer; font-weight:700; font-size:.82rem; }
+.filter-btn:hover { background:rgba(249,115,22,.3); }
+.filter-reset { color:var(--color-text-muted); font-size:.82rem; text-decoration:none; }
+.filter-reset:hover { color:#fff; }
+
+/* Sections */
+.tracks-section-title { font-size:.72rem; font-weight:800; text-transform:uppercase; letter-spacing:.12em; color:var(--color-primary); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.tracks-section-title::after { content:''; flex:1; height:1px; background:rgba(249,115,22,.2); }
+.tracks-empty { color:var(--color-text-muted); font-size:.88rem; padding:16px 0; }
+.tracks-empty a { color:var(--color-primary); }
+
+/* Track grid */
+.tracks-grid { display:flex; flex-direction:column; gap:10px; }
+.track-card {
+    background:#16161c; border:1px solid rgba(255,255,255,.07); border-radius:14px;
+    padding:16px 20px; display:flex; align-items:center; gap:16px; transition:all .2s;
+}
+.track-card:hover { border-color:rgba(249,115,22,.25); }
+.track-card-mine { border-left:3px solid rgba(249,115,22,.5); }
+.track-icon { font-size:2rem; flex-shrink:0; }
+.track-info { flex:1; min-width:0; }
+.track-title { font-size:.95rem; font-weight:700; color:#fff; margin-bottom:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.track-author { font-size:.78rem; color:var(--color-primary); margin-bottom:2px; }
+.track-meta { font-size:.78rem; color:var(--color-text-muted); }
+.track-date { font-size:.72rem; color:#444; margin-top:2px; font-weight:700; }
+.track-actions { display:flex; align-items:center; gap:10px; flex-shrink:0; }
+.track-visibility { font-size:.72rem; font-weight:700; padding:3px 10px; border-radius:999px; }
+.track-visibility.public  { background:rgba(34,197,94,.12); color:#4ade80; }
+.track-visibility.private { background:rgba(255,255,255,.06); color:#666; }
+.track-likes { font-size:.82rem; color:var(--color-text-muted); }
+.track-del-btn { background:rgba(239,68,68,.1); color:#f87171; border:1px solid rgba(239,68,68,.25); border-radius:8px; padding:5px 10px; cursor:pointer; font-size:.8rem; }
+.track-del-btn:hover { background:rgba(239,68,68,.2); }
+.track-like-btn {
+    background:rgba(239,68,68,.1); color:#f87171; border:1px solid rgba(239,68,68,.25);
+    border-radius:999px; padding:6px 14px; cursor:pointer; font-size:.82rem; font-weight:700;
+    transition:all .2s;
+}
+.track-like-btn:hover { background:rgba(239,68,68,.25); transform:scale(1.05); }
+.track-like-btn.liked { background:rgba(239,68,68,.4); color:#fff; }
+.track-museum-btn { font-size:1.1rem; text-decoration:none; padding:4px 8px; border-radius:8px; transition:all .2s; }
+.track-museum-btn:hover { background:rgba(139,92,246,.15); }
+</style>
+
+<script>
+/* Like via AJAX */
+document.querySelectorAll('.track-like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        btn.classList.add('liked');
+        const res = await fetch(`/music/tracks/${id}/like`, { method:'POST', headers:{'X-Requested-With':'XMLHttpRequest'} });
+        const json = await res.json();
+        btn.querySelector('.like-count').textContent = json.likes;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,606 @@
+{% extends 'base.html.twig' %}
+{% block title %}{{ story.title }} — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_story_index') }}" class="btn btn-ghost"><i data-lucide="arrow-left" class="btn-icon"></i> Stories</a>
+        <h1 class="module-title">{{ story.title }}</h1>
+        <div class="module-actions" style="display:flex;gap:8px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-outline tts-btn" id="btnReadAll" onclick="readFullStory()" title="Read Full Story">
+                <i data-lucide="volume-2" class="btn-icon"></i> Read Aloud
+            </button>
+            <button type="button" class="btn btn-ghost tts-stop-btn" id="btnStopTTS" onclick="stopTTS()" style="display:none;" title="Stop Reading">
+                <i data-lucide="volume-x" class="btn-icon"></i> Stop
+            </button>
+            <a href="{{ path('app_story_export_pdf', {id: story.id}) }}" class="btn btn-outline" title="Export PDF">
+                <i data-lucide="file-down" class="btn-icon"></i> PDF
+            </a>
+            <a href="{{ path('app_story_export_json', {id: story.id}) }}" class="btn btn-outline" title="Export JSON">
+                <i data-lucide="download" class="btn-icon"></i> JSON
+            </a>
+            <a href="{{ path('app_story_edit', {id: story.id}) }}" class="btn btn-outline"><i data-lucide="pencil" class="btn-icon"></i> Edit</a>
+        </div>
+    </div>
+
+    <div class="story-detail">
+        <div class="story-meta-bar">
+            <span class="story-genre-badge">{{ story.genreNames }}</span>
+            <span class="story-status {{ story.status|lower }}">{{ story.status ?? 'DRAFT' }}</span>
+        </div>
+
+        {% if story.content %}
+        <div class="content-card" style="margin-bottom:var(--space-xl);">
+            <div style="display:flex;justify-content:space-between;align-items:center;">
+                <h3><i data-lucide="align-left" style="width:18px;height:18px;color:var(--accent);"></i> Synopsis</h3>
+                <button type="button" class="btn btn-ghost btn-sm tts-inline-btn" onclick="readText(this, {{ story.content|json_encode }})" title="Read synopsis aloud">
+                    <i data-lucide="volume-2" style="width:14px;height:14px;"></i>
+                </button>
+            </div>
+            <p id="synopsisContent">{{ story.content|nl2br }}</p>
+        </div>
+        {% endif %}
+
+        {# ── CHAPTERS ── #}
+        <div class="story-chapters">
+            <div class="chapters-header">
+                <h2><i data-lucide="book-open" style="width:20px;height:20px;color:var(--accent);"></i> Chapters ({{ story.chapters|length }})</h2>
+            </div>
+
+            {% for chapter in story.chapters %}
+            <div class="chapter-block" id="chapter-{{ chapter.id }}">
+                <div class="chapter-header">
+                    <h3>Chapter {{ chapter.orderIndex ?? loop.index }}: {{ chapter.title }}</h3>
+                    <div class="chapter-actions">
+                        <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEditChapter({{ chapter.id }})" title="Edit Chapter">
+                            <i data-lucide="pencil" style="width:14px;height:14px;"></i>
+                        </button>
+                        <form method="post" action="{{ path('app_chapter_delete', {id: chapter.id}) }}" onsubmit="return confirm('Delete this chapter and all its scenes?');" style="display:inline;">
+                            <button type="submit" class="btn btn-ghost btn-sm btn-danger-text" title="Delete Chapter">
+                                <i data-lucide="trash-2" style="width:14px;height:14px;"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                {# Inline edit chapter title #}
+                <div class="chapter-edit-inline" id="chapter-edit-{{ chapter.id }}" style="display:none;">
+                    <form method="post" action="{{ path('app_chapter_edit', {id: chapter.id}) }}" style="display:flex;gap:8px;align-items:center;padding:8px 0;">
+                        <input type="text" name="title" class="form-control" value="{{ chapter.title }}" required style="flex:1;">
+                        <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="check" style="width:14px;height:14px;"></i> Save</button>
+                        <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEditChapter({{ chapter.id }})">Cancel</button>
+                    </form>
+                </div>
+
+                {# Scenes in this chapter #}
+                {% if chapter.scenes is defined %}
+                {% for scene in chapter.scenes %}
+                <div class="scene-block" id="scene-{{ scene.id }}">
+                    <div class="scene-header">
+                        <strong>{{ scene.title }}</strong>
+                        <div class="scene-header-actions">
+                            <span class="story-status {{ scene.status|lower }}">{{ scene.status }}</span>
+                            <button type="button" class="btn btn-ghost btn-xs" onclick="toggleEditScene({{ scene.id }})" title="Edit Scene">
+                                <i data-lucide="pencil" style="width:12px;height:12px;"></i>
+                            </button>
+                            <form method="post" action="{{ path('app_scene_delete', {id: scene.id}) }}" onsubmit="return confirm('Delete this scene?');" style="display:inline;">
+                                <button type="submit" class="btn btn-ghost btn-xs btn-danger-text" title="Delete Scene">
+                                    <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    {# Read-only content #}
+                    <div class="scene-content-display" id="scene-display-{{ scene.id }}">
+                        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px;">
+                            <p style="flex:1;">{{ scene.content|nl2br }}</p>
+                            <button type="button" class="btn btn-ghost btn-xs tts-inline-btn" onclick="readText(this, {{ scene.content|json_encode }})" title="Read scene aloud" style="flex-shrink:0;margin-top:2px;">
+                                <i data-lucide="volume-2" style="width:12px;height:12px;"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    {# Inline edit form #}
+                    <div class="scene-edit-inline" id="scene-edit-{{ scene.id }}" style="display:none;">
+                        <form method="post" action="{{ path('app_scene_edit', {id: scene.id}) }}">
+                            <div class="form-group" style="margin-bottom:8px;">
+                                <input type="text" name="title" class="form-control" value="{{ scene.title }}" placeholder="Scene title" required>
+                            </div>
+                            <div class="form-group" style="margin-bottom:8px;">
+                                <div class="stt-textarea-wrap">
+                                    <textarea name="content" id="scene-textarea-{{ scene.id }}" class="form-control" rows="4">{{ scene.content }}</textarea>
+                                    <button type="button" class="stt-mic-btn" onclick="toggleDictation('scene-textarea-{{ scene.id }}', this)" title="Dictate">
+                                        <i data-lucide="mic" style="width:14px;height:14px;"></i>
+                                    </button>
+                                </div>
+                                <span class="stt-status" id="stt-status-scene-textarea-{{ scene.id }}"></span>
+                            </div>
+                            <div style="display:flex;gap:8px;">
+                                <button type="submit" class="btn btn-primary btn-sm"><i data-lucide="save" style="width:14px;height:14px;"></i> Save</button>
+                                <button type="button" class="btn btn-ghost btn-sm" onclick="toggleEditScene({{ scene.id }})">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                {# Add Scene form #}
+                <form method="post" action="{{ path('app_scene_new', {id: chapter.id}) }}" class="add-scene-form">
+                    <input type="text" name="title" class="form-control" placeholder="Scene title..." required>
+                    <div class="stt-textarea-wrap">
+                        <textarea name="content" id="new-scene-{{ chapter.id }}" class="form-control" rows="3" placeholder="Write the scene content..."></textarea>
+                        <button type="button" class="stt-mic-btn" onclick="toggleDictation('new-scene-{{ chapter.id }}', this)" title="Dictate">
+                            <i data-lucide="mic" style="width:14px;height:14px;"></i>
+                        </button>
+                    </div>
+                    <span class="stt-status" id="stt-status-new-scene-{{ chapter.id }}"></span>
+                    <button type="submit" class="btn btn-outline btn-sm"><i data-lucide="plus" style="width:14px;height:14px;"></i> Add Scene</button>
+                </form>
+            </div>
+            {% endfor %}
+
+            {# Add Chapter form #}
+            <div class="add-chapter-form">
+                <form method="post" action="{{ path('app_chapter_new', {id: story.id}) }}" style="display:flex;gap:var(--space-sm);align-items:center;">
+                    <input type="text" name="title" class="form-control" placeholder="New chapter title..." required style="flex:1;">
+                    <button type="submit" class="btn btn-primary"><i data-lucide="plus" class="btn-icon"></i> Add Chapter</button>
+                </form>
+            </div>
+        </div>
+
+        {# ━━━ DATAMUSE WORD EXPLORER ━━━ #}
+        <div class="content-card" style="margin-top:var(--space-xl);">
+            <h3 style="display:flex;align-items:center;gap:8px;margin-bottom:12px;">
+                <i data-lucide="book-open-text" style="width:18px;height:18px;color:var(--accent);"></i>
+                Word Explorer (Datamuse)
+            </h3>
+            <div style="display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;">
+                <input type="text" id="datamuseWord" class="form-control" placeholder="Enter a word…" style="flex:1;min-width:120px;">
+                <select id="datamuseType" class="form-control" style="width:auto;padding:6px 10px;">
+                    <option value="syn">🔄 Synonyms</option>
+                    <option value="ant">↔️ Antonyms</option>
+                    <option value="rhy">🎤 Rhymes</option>
+                    <option value="similar">🧠 Similar Meaning</option>
+                    <option value="adj">🎨 Adjectives</option>
+                    <option value="sounds">🔊 Sounds Like</option>
+                </select>
+                <button id="datamuseSearch" class="btn btn-primary btn-sm">Search</button>
+            </div>
+            <div id="datamuseResults" style="display:flex;gap:6px;flex-wrap:wrap;min-height:28px;"></div>
+            <div id="datamuseInfo" style="font-size:.65rem;color:var(--color-text-muted,#888);margin-top:6px;"></div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<style>
+/* ── Chapter & Scene action buttons ── */
+.chapter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.chapter-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.scene-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.scene-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Tiny button variant */
+.btn-xs {
+    padding: 2px 6px;
+    font-size: 0.72rem;
+    border-radius: 6px;
+}
+
+/* Danger text color for delete icons */
+.btn-danger-text {
+    color: #ef4444 !important;
+}
+.btn-danger-text:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #dc2626 !important;
+}
+
+/* Smooth edit transitions */
+.chapter-edit-inline,
+.scene-edit-inline {
+    animation: slideDown 0.2s ease-out;
+}
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Import modal overlay */
+.import-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOverlay 0.2s ease-out;
+}
+.import-modal {
+    background: var(--bg-card, #1e1e2e);
+    border: 1px solid var(--border, #333);
+    border-radius: 16px;
+    padding: 32px;
+    width: 90%;
+    max-width: 480px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    animation: scaleIn 0.25s ease-out;
+}
+.import-modal h3 {
+    margin-bottom: 16px;
+    color: var(--accent, #7c3aed);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.import-dropzone {
+    border: 2px dashed var(--border, #444);
+    border-radius: 12px;
+    padding: 32px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: 16px;
+    color: var(--text-muted, #888);
+}
+.import-dropzone:hover,
+.import-dropzone.dragover {
+    border-color: var(--accent, #7c3aed);
+    background: rgba(124, 58, 237, 0.06);
+    color: var(--accent, #7c3aed);
+}
+.import-modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+@keyframes scaleIn {
+    from { opacity: 0; transform: scale(0.92); }
+    to   { opacity: 1; transform: scale(1); }
+}
+/* ── TTS buttons ── */
+.tts-btn {
+    background: rgba(34,197,94,0.1) !important;
+    color: #22c55e !important;
+    border-color: rgba(34,197,94,0.3) !important;
+}
+.tts-btn:hover {
+    background: rgba(34,197,94,0.2) !important;
+}
+.tts-btn.speaking {
+    background: rgba(239,68,68,0.15) !important;
+    color: #f87171 !important;
+    border-color: rgba(239,68,68,0.3) !important;
+    animation: ttsPulse 1.5s ease-in-out infinite;
+}
+.tts-stop-btn {
+    color: #f87171 !important;
+}
+.tts-inline-btn {
+    opacity: 0.4;
+    transition: opacity 0.2s;
+}
+.tts-inline-btn:hover, .tts-inline-btn.speaking {
+    opacity: 1;
+}
+.tts-inline-btn.speaking {
+    color: #22c55e !important;
+    animation: ttsPulse 1.5s ease-in-out infinite;
+}
+@keyframes ttsPulse {
+    0%,100% { opacity:0.7; }
+    50% { opacity:1; }
+}
+/* ── Speech-to-Text dictation ── */
+.stt-textarea-wrap {
+    position: relative;
+}
+.stt-mic-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: rgba(139,92,246,0.1);
+    border: 1px solid rgba(139,92,246,0.25);
+    color: rgba(139,92,246,0.6);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 5;
+}
+.stt-mic-btn:hover {
+    background: rgba(139,92,246,0.2);
+    color: #a78bfa;
+}
+.stt-mic-btn.recording {
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.4);
+    color: #ef4444;
+    animation: sttPulse 1s ease-in-out infinite;
+}
+@keyframes sttPulse {
+    0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.3); }
+    50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+}
+.stt-status {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: rgba(139,92,246,0.6);
+    min-height: 18px;
+    margin-top: 4px;
+}
+</style>
+
+<script>
+if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+// ── Toggle inline edit for chapters ──
+function toggleEditChapter(id) {
+    const el = document.getElementById('chapter-edit-' + id);
+    if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+    }
+}
+
+// ── Toggle inline edit for scenes ──
+function toggleEditScene(id) {
+    const editEl = document.getElementById('scene-edit-' + id);
+    const displayEl = document.getElementById('scene-display-' + id);
+    if (editEl && displayEl) {
+        const showing = editEl.style.display !== 'none';
+        editEl.style.display = showing ? 'none' : 'block';
+        displayEl.style.display = showing ? 'block' : 'none';
+    }
+}
+
+/* ═══════════════════════════════════════
+   TEXT-TO-SPEECH
+═══════════════════════════════════════ */
+let currentUtterance = null;
+let activeBtn = null;
+
+function readText(btn, text) {
+    if (!text || !window.speechSynthesis) return;
+
+    // If already speaking this text, stop it
+    if (btn.classList.contains('speaking')) {
+        stopTTS();
+        return;
+    }
+
+    stopTTS(); // Stop any previous
+
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = 'en-US';
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+
+    // Try to pick a nice voice
+    const voices = speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Natural'));
+    if (preferred) utterance.voice = preferred;
+
+    btn.classList.add('speaking');
+    activeBtn = btn;
+    currentUtterance = utterance;
+
+    document.getElementById('btnStopTTS').style.display = 'inline-flex';
+
+    utterance.onend = () => cleanupTTS();
+    utterance.onerror = () => cleanupTTS();
+
+    speechSynthesis.speak(utterance);
+}
+
+function readFullStory() {
+    if (!window.speechSynthesis) { alert('Your browser doesn\'t support Text-to-Speech.'); return; }
+
+    const readAllBtn = document.getElementById('btnReadAll');
+    if (readAllBtn.classList.contains('speaking')) { stopTTS(); return; }
+
+    // Gather all text: synopsis + all scenes
+    let fullText = '';
+    const synopsis = document.getElementById('synopsisContent');
+    if (synopsis) fullText += synopsis.innerText + '. ';
+
+    document.querySelectorAll('.scene-content-display p').forEach(p => {
+        fullText += p.innerText + '. ';
+    });
+
+    if (!fullText.trim()) { alert('No content to read.'); return; }
+
+    stopTTS();
+
+    const utterance = new SpeechSynthesisUtterance(fullText.trim());
+    utterance.lang = 'en-US';
+    utterance.rate = 0.92;
+    utterance.pitch = 1;
+
+    const voices = speechSynthesis.getVoices();
+    const preferred = voices.find(v => v.name.includes('Samantha') || v.name.includes('Google') || v.name.includes('Natural'));
+    if (preferred) utterance.voice = preferred;
+
+    readAllBtn.classList.add('speaking');
+    readAllBtn.innerHTML = '<i data-lucide="loader" class="btn-icon" style="animation:spin 1s linear infinite;"></i> Reading…';
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+    activeBtn = readAllBtn;
+    currentUtterance = utterance;
+    document.getElementById('btnStopTTS').style.display = 'inline-flex';
+
+    utterance.onend = () => cleanupTTS();
+    utterance.onerror = () => cleanupTTS();
+
+    speechSynthesis.speak(utterance);
+}
+
+function stopTTS() {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    cleanupTTS();
+}
+
+function cleanupTTS() {
+    if (activeBtn) {
+        activeBtn.classList.remove('speaking');
+        if (activeBtn.id === 'btnReadAll') {
+            activeBtn.innerHTML = '<i data-lucide="volume-2" class="btn-icon"></i> Read Aloud';
+            if (typeof lucide !== 'undefined') lucide.createIcons();
+        }
+    }
+    activeBtn = null;
+    currentUtterance = null;
+    const stopBtn = document.getElementById('btnStopTTS');
+    if (stopBtn) stopBtn.style.display = 'none';
+}
+
+// Load voices (some browsers load them async)
+if (window.speechSynthesis) {
+    speechSynthesis.onvoiceschanged = () => {};
+    speechSynthesis.getVoices();
+}
+
+/* ═══════════════════════════════════════
+   SPEECH-TO-TEXT (DICTATION)
+═══════════════════════════════════════ */
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+let activeRecognition = null;
+let activeRecField = null;
+
+function toggleDictation(textareaId, btn) {
+    if (!SpeechRecognition) {
+        alert('Your browser does not support Speech Recognition. Please use Chrome or Edge.');
+        return;
+    }
+
+    if (activeRecField === textareaId && activeRecognition) {
+        activeRecognition.stop();
+        return;
+    }
+    if (activeRecognition) activeRecognition.stop();
+
+    const textarea = document.getElementById(textareaId);
+    const statusEl = document.getElementById('stt-status-' + textareaId);
+    if (!textarea) return;
+
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.interimResults = true;
+    recognition.continuous = true;
+    recognition.maxAlternatives = 1;
+
+    let finalTranscript = '';
+
+    recognition.onstart = () => {
+        btn.classList.add('recording');
+        if (statusEl) statusEl.textContent = '🎙️ Listening… speak now';
+        activeRecField = textareaId;
+        activeRecognition = recognition;
+    };
+
+    recognition.onresult = (event) => {
+        let interim = '';
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+            const transcript = event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+                finalTranscript += transcript + ' ';
+            } else {
+                interim += transcript;
+            }
+        }
+        if (finalTranscript) {
+            const curVal = textarea.value;
+            const needsSpace = curVal.length > 0 && !curVal.endsWith(' ') && !curVal.endsWith('\n');
+            textarea.value = curVal + (needsSpace ? ' ' : '') + finalTranscript;
+            finalTranscript = '';
+        }
+        if (statusEl) statusEl.textContent = interim ? '🎙️ "' + interim + '"' : '🎙️ Listening…';
+    };
+
+    recognition.onerror = (event) => {
+        if (statusEl) statusEl.textContent = '⚠️ ' + event.error;
+        btn.classList.remove('recording');
+        activeRecField = null;
+        activeRecognition = null;
+    };
+
+    recognition.onend = () => {
+        btn.classList.remove('recording');
+        if (statusEl) statusEl.textContent = '';
+        activeRecField = null;
+        activeRecognition = null;
+    };
+
+    recognition.start();
+}
+
+// ── Datamuse Word Explorer API ──
+(function(){
+    const input = document.getElementById('datamuseWord');
+    const typeSelect = document.getElementById('datamuseType');
+    const btn = document.getElementById('datamuseSearch');
+    const results = document.getElementById('datamuseResults');
+    const info = document.getElementById('datamuseInfo');
+
+    async function searchDatamuse() {
+        const word = input.value.trim();
+        if (!word) return;
+        const type = typeSelect.value;
+        results.innerHTML = '<span style="font-size:.78rem;color:var(--color-text-muted,#888);">Searching…</span>';
+        info.textContent = '';
+        try {
+            const res = await fetch(`{{ path('api_datamuse_words') }}?word=${encodeURIComponent(word)}&type=${type}&max=15`);
+            const data = await res.json();
+            if (data.error) { results.innerHTML = `<span style="color:#f87171;font-size:.78rem;">${data.error}</span>`; return; }
+            if (!data.results.length) { results.innerHTML = '<span style="font-size:.78rem;color:var(--color-text-muted,#888);">No results found.</span>'; return; }
+            results.innerHTML = data.results.map(w => `
+                <span class="dm-word" style="padding:4px 12px;background:rgba(139,92,246,.08);border:1px solid rgba(139,92,246,.2);border-radius:8px;font-size:.78rem;color:#c4b5fd;cursor:pointer;transition:all .15s;font-weight:500;"
+                      onmouseover="this.style.background='rgba(139,92,246,.18)';this.style.borderColor='rgba(139,92,246,.4)'"
+                      onmouseout="this.style.background='rgba(139,92,246,.08)';this.style.borderColor='rgba(139,92,246,.2)'"
+                      title="Click to copy">${w.word}</span>
+            `).join('');
+            info.textContent = `${data.results.length} ${type === 'syn' ? 'synonyms' : type === 'rhy' ? 'rhymes' : type === 'ant' ? 'antonyms' : 'results'} for "${word}" — click to copy`;
+            // Copy to clipboard on click
+            results.querySelectorAll('.dm-word').forEach(el => {
+                el.addEventListener('click', () => {
+                    navigator.clipboard.writeText(el.textContent.trim());
+                    el.style.background = 'rgba(34,197,94,.2)';
+                    el.style.color = '#22c55e';
+                    setTimeout(() => { el.style.background = 'rgba(139,92,246,.08)'; el.style.color = '#c4b5fd'; }, 800);
+                });
+            });
+        } catch(e) { results.innerHTML = '<span style="color:#f87171;font-size:.78rem;">Failed to search.</span>'; }
+    }
+
+    btn.addEventListener('click', searchDatamuse);
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') searchDatamuse(); });
+})();
+</script>
+{% endblock %}

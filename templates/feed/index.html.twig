@@ -1,0 +1,112 @@
+{% extends 'base.html.twig' %}
+{% block title %}Artist Feed — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_user_dashboard') }}" class="btn btn-ghost">← Dashboard</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><path d="M22 4 12 9 2 4"/><path d="m2 4 3 15h3l1-4"/><path d="M12 9v13" opacity=".4"/><circle cx="18" cy="15" r="3" opacity=".4"/></svg> Artist Feed</h1>
+        <div class="module-actions">
+            <a href="{{ path('app_feed_new') }}" class="btn btn-primary">+ New Post</a>
+        </div>
+    </div>
+
+    {% if pagination.totalItemCount == 0 %}
+        <div class="empty-state">
+            <span style="font-size:4rem">📢</span>
+            <p>The feed is empty. Share something with the community!</p>
+            <a href="{{ path('app_feed_new') }}" class="btn btn-primary">Create a Post</a>
+        </div>
+    {% else %}
+    <div class="feed-list">
+        {% for post in pagination %}
+        <div class="feed-card" id="post-{{ post.id }}">
+            <div class="feed-header">
+                <div class="feed-avatar">{{ post.author ? post.author.firstName|slice(0,1)|upper : '?' }}</div>
+                <div class="feed-author-info">
+                    <strong>{{ post.author ? post.author.firstName ~ ' ' ~ post.author.lastName : 'Anonymous' }}</strong>
+                    <span class="feed-time">Post #{{ post.id }}</span>
+                </div>
+                {% if post.author == app.user %}
+                <form method="post" action="{{ path('app_feed_delete', {id: post.id}) }}" onsubmit="return confirm('Delete this post?');">
+                    <button type="submit" class="btn btn-ghost btn-sm" title="Delete">🗑️</button>
+                </form>
+                {% endif %}
+            </div>
+
+            {% if post.description %}
+            <div class="feed-body">
+                <p>{{ post.description|nl2br }}</p>
+            </div>
+            {% endif %}
+
+            {% if post.imagePath %}
+            <div class="feed-image">
+                <img src="{{ post.imagePath }}" alt="Post image">
+            </div>
+            {% endif %}
+
+            {% if post.gifUrl %}
+            <div class="feed-image">
+                <img src="{{ post.gifUrl }}" alt="GIF" style="border-radius:8px;max-width:100%;">
+            </div>
+            {% endif %}
+
+            <div class="feed-actions">
+                <button class="btn btn-ghost btn-sm like-btn" data-post-id="{{ post.id }}">
+                    ❤️ <span class="like-count">{{ post.likeCount }}</span>
+                </button>
+                <button class="btn btn-ghost btn-sm toggle-comments" data-target="comments-{{ post.id }}">
+                    💬 {{ post.comments|length }}
+                </button>
+                <span class="feed-sparks">✨ {{ post.magicSparks }} sparks</span>
+            </div>
+
+            {# Comments section #}
+            <div class="feed-comments" id="comments-{{ post.id }}" style="display:none;">
+                {% for c in post.comments %}
+                <div class="feed-comment">
+                    <strong>{{ c.user ? c.user.firstName : 'Anonymous' }}:</strong>
+                    {{ c.content }}
+                </div>
+                {% endfor %}
+                <form method="post" action="{{ path('app_feed_comment', {id: post.id}) }}" class="comment-form">
+                    <input type="text" name="content" class="form-control" placeholder="Write a comment..." required>
+                    <button type="submit" class="btn btn-primary btn-sm">Send</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {# ── KnpPaginator navigation ── #}
+    <div class="pagination-wrap" style="display:flex;justify-content:center;padding:24px 0;">
+        {{ knp_pagination_render(pagination) }}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
+
+{% block page_scripts %}
+<script>
+// Toggle comments
+document.querySelectorAll('.toggle-comments').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const target = document.getElementById(btn.dataset.target);
+        target.style.display = target.style.display === 'none' ? 'block' : 'none';
+    });
+});
+
+// Like button (AJAX)
+document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const postId = btn.dataset.postId;
+        try {
+            const resp = await fetch(`/feed/${postId}/like`, { method: 'POST' });
+            const data = await resp.json();
+            btn.querySelector('.like-count').textContent = data.count;
+        } catch (err) { console.error(err); }
+    });
+});
+</script>
+{% endblock %}

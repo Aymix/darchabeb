@@ -1,0 +1,53 @@
+{% extends 'base.html.twig' %}
+{% block title %}My Gallery — VirtuArts{% endblock %}
+
+{% block body %}
+<section class="module-page">
+    <div class="module-topbar">
+        <a href="{{ path('app_drawing_studio') }}" class="btn btn-ghost">← Studio</a>
+        <h1 class="module-title"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ff9500" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><rect x="6" y="6" width="12" height="12" rx="1" opacity=".4"/></svg> My Gallery</h1>
+        <div class="module-actions">
+            <a href="{{ path('app_drawing_studio') }}" class="btn btn-primary">+ New Drawing</a>
+        </div>
+    </div>
+
+    <h2 class="section-subtitle" style="margin: var(--space-lg) 0;">My Drawings</h2>
+    {% if myDrawings is empty %}
+        <div class="empty-state">
+            <p>You haven't created any drawings yet.</p>
+            <a href="{{ path('app_drawing_studio') }}" class="btn btn-primary">Create your first drawing</a>
+        </div>
+    {% else %}
+        <div class="gallery-grid">
+            {% for d in myDrawings %}
+            <div class="gallery-card">
+                <div class="gallery-img" style="background:linear-gradient(135deg, var(--color-bg-card), var(--color-bg-raised));display:flex;align-items:center;justify-content:center;">
+                    <span style="font-size:3rem">🎨</span>
+                </div>
+                <div class="gallery-info">
+                    <h3>{{ d.title ?? 'Untitled' }}</h3>
+                    <span class="gallery-date">{{ d.createdAt ? d.createdAt|date('M d, Y') : '' }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    {% if allDrawings is not empty %}
+    <h2 class="section-subtitle" style="margin: var(--space-2xl) 0 var(--space-lg);">Community Gallery</h2>
+    <div class="gallery-grid">
+        {% for d in allDrawings %}
+        <div class="gallery-card">
+            <div class="gallery-img" style="background:linear-gradient(135deg, var(--color-bg-card), var(--color-bg-raised));display:flex;align-items:center;justify-content:center;">
+                <span style="font-size:3rem">🎨</span>
+            </div>
+            <div class="gallery-info">
+                <h3>{{ d.title ?? 'Untitled' }}</h3>
+                <span class="gallery-date">by {{ d.user ? d.user.firstName : 'Anonymous' }} · ❤️ {{ d.likeCount }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}
