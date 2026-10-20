@@ -1604,3 +1604,49 @@ window.addEventListener('aura-apply-hdri', (e) => {
   showToast('HDRI "' + name + '" set as environment', 'success');
 });
 
+
+/* ═══════════════════════════════════════
+   HAND GESTURE BRIDGE (see public/js/gesture/)
+   Exposes a small, safe surface so the gesture
+   adapter can orbit/zoom the camera and pick shapes.
+═══════════════════════════════════════ */
+window.VAShapeBuilder = {
+  /** rotate the camera around the orbit target by (dTheta, dPhi) radians */
+  orbit(dTheta, dPhi) {
+    const offset = camera.position.clone().sub(orbitControls.target);
+    const sph = new THREE.Spherical().setFromVector3(offset);
+    sph.theta -= dTheta;
+    sph.phi = Math.min(Math.PI - 0.05, Math.max(0.05, sph.phi - dPhi));
+    offset.setFromSpherical(sph);
+    camera.position.copy(orbitControls.target).add(offset);
+    camera.lookAt(orbitControls.target);
+    orbitControls.update();
+  },
+  /** multiply camera distance by factor (<1 zooms in), clamped to orbit limits */
+  zoom(factor) {
+    const offset = camera.position.clone().sub(orbitControls.target);
+    const len = Math.min(orbitControls.maxDistance, Math.max(orbitControls.minDistance, offset.length() * factor));
+    offset.setLength(len);
+    camera.position.copy(orbitControls.target).add(offset);
+    orbitControls.update();
+  },
+  /** select the shape under a viewport point; returns its name or null */
+  pickAt(clientX, clientY) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    const v = new THREE.Vector2(((clientX - rect.left) / rect.width) * 2 - 1, -((clientY - rect.top) / rect.height) * 2 + 1);
+    raycaster.setFromCamera(v, camera);
+    const hits = raycaster.intersectObjects(objects);
+    if (hits.length) { selectObject(hits[0].object); return hits[0].object.userData.name || 'shape'; }
+    return null;
+  },
+  deselect() { selectObject(null); },
+  focusSelected() { if (selectedObject) focusOnObject(selectedObject); },
+  resetView() { resetCameraView('perspective'); },
+  undo, redo,
+  get selectedName() { return selectedObject ? (selectedObject.userData.name || 'shape') : null; },
+  get cameraDistance() { return camera.position.distanceTo(orbitControls.target); },
+  get cameraPosition() { return camera.position.toArray(); },
+  get objectCount() { return objects.length; },
+  addShape(type) { return addObject(type); },
+};
+window.dispatchEvent(new Event('va-shapebuilder-ready'));
