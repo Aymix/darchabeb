@@ -29,6 +29,16 @@
             </div>
         {% endif %}
 
+        {# ── Sign-in method toggle: password or Face ID (webcam face match) ── #}
+        <div class="login-method" role="tablist" aria-label="Sign-in method">
+            <button type="button" role="tab" class="login-method-btn active" data-method="password" aria-selected="true">
+                <i data-lucide="key-round" class="btn-icon"></i> Password
+            </button>
+            <button type="button" role="tab" class="login-method-btn" data-method="face" aria-selected="false">
+                <i data-lucide="scan-face" class="btn-icon"></i> Face ID
+            </button>
+        </div>
+
         <form method="post" class="auth-form" id="loginForm">
             <div class="form-group">
                 <label for="inputEmail">Email Address</label>
@@ -37,7 +47,7 @@
                        placeholder="you@example.com" autocomplete="email">
             </div>
 
-            <div class="form-group">
+            <div class="form-group" data-password-only>
                 <label for="inputPassword">Password</label>
                 <input type="password" id="inputPassword" name="_password" 
                        required placeholder="Enter your password" autocomplete="current-password">
@@ -46,9 +56,18 @@
 
             <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
 
-            <button type="submit" class="btn btn-primary btn-block" id="loginButton">
+            <button type="submit" class="btn btn-primary btn-block" id="loginButton" data-password-only>
                 <i data-lucide="log-in" class="btn-icon"></i> Sign In
             </button>
+
+            <div class="face-login" id="faceLogin" hidden>
+                <div class="face-login-video"><video id="faceVideo" playsinline muted></video><div class="face-login-ring"></div></div>
+                <p class="face-login-status" id="faceStatus" aria-live="polite">Enter your email, then scan your face. Face ID must be turned on in your profile first.</p>
+                <button type="button" class="btn btn-primary btn-block" id="faceScanBtn">
+                    <i data-lucide="scan-face" class="btn-icon"></i> Scan my face
+                </button>
+                <p class="face-login-note">Your camera image stays on this device — only a numeric face template is checked.</p>
+            </div>
         </form>
 
         <div class="auth-footer">
@@ -60,7 +79,73 @@
 {% endblock %}
 
 {% block page_scripts %}
+<style>
+    .login-method { display: flex; gap: 6px; padding: 4px; margin-bottom: 18px; border-radius: 12px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); }
+    .login-method-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 10px; border: 0; border-radius: 9px; background: transparent; color: #a8a29e; font-weight: 700; cursor: pointer; }
+    .login-method-btn.active { background: linear-gradient(135deg, #f97316, #f59e0b); color: #1c1917; }
+    .face-login { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .face-login[hidden], #loginForm [data-password-only][hidden] { display: none !important; }
+    .face-login-video { position: relative; width: 200px; height: 200px; border-radius: 50%; overflow: hidden; background: #0c0a09; border: 2px solid rgba(249,115,22,0.4); }
+    .face-login-video video { width: 100%; height: 100%; object-fit: cover; transform: scaleX(-1); }
+    .face-login-ring { position: absolute; inset: 0; border-radius: 50%; box-shadow: inset 0 0 0 3px transparent; transition: box-shadow .2s; }
+    .face-login[data-state="scan"] .face-login-ring { box-shadow: inset 0 0 0 3px #f59e0b; animation: face-pulse 1.2s infinite; }
+    .face-login[data-state="ok"] .face-login-ring { box-shadow: inset 0 0 0 4px #22c55e; }
+    .face-login[data-state="error"] .face-login-ring { box-shadow: inset 0 0 0 3px #ef4444; }
+    @keyframes face-pulse { 50% { opacity: .4; } }
+    .face-login-status { margin: 0; text-align: center; font-size: .85rem; color: #d6d3d1; min-height: 2.4em; }
+    .face-login[data-state="error"] .face-login-status { color: #fca5a5; }
+    .face-login-note { margin: 0; text-align: center; font-size: .72rem; color: #78716c; }
+</style>
+<script src="{{ asset('js/face-auth.js') }}"></script>
 <script>
     if (typeof lucide !== 'undefined') { lucide.createIcons(); }
+
+    (function () {
+        const form = document.getElementById('loginForm');
+        const face = document.getElementById('faceLogin');
+        const pwdOnly = form.querySelectorAll('[data-password-only]');
+        const pwdInput = document.getElementById('inputPassword');
+        const email = document.getElementById('inputEmail');
+        const status = document.getElementById('faceStatus');
+        const btn = document.getElementById('faceScanBtn');
+        const video = document.getElementById('faceVideo');
+        const setState = (state, msg) => { face.dataset.state = state; if (msg) status.textContent = msg; };
+
+        function setMethod(m) {
+            document.querySelectorAll('.login-method-btn').forEach(b => {
+                const on = b.dataset.method === m; b.classList.toggle('active', on); b.setAttribute('aria-selected', on);
+            });
+            const isFace = m === 'face';
+            pwdOnly.forEach(el => el.hidden = isFace);
+            pwdInput.required = !isFace;
+            face.hidden = !isFace;
+            if (!isFace) { window.VAFaceAuth.stop(); video.srcObject = null; }
+            try { localStorage.setItem('va-login-method', m); } catch (e) {}
+        }
+        document.querySelectorAll('.login-method-btn').forEach(b => b.addEventListener('click', () => setMethod(b.dataset.method)));
+        try { if (localStorage.getItem('va-login-method') === 'face') setMethod('face'); } catch (e) {}
+
+        form.addEventListener('submit', e => { if (!face.hidden) { e.preventDefault(); btn.click(); } });
+
+        let busy = false;
+        btn.addEventListener('click', async () => {
+            if (busy) return;
+            if (!email.value || !email.checkValidity()) { setState('error', 'Enter your email address first.'); email.focus(); return; }
+            busy = true; btn.disabled = true;
+            try {
+                const [descriptor] = await window.VAFaceAuth.capture({ video, samples: 1, onStatus: (s, m) => setState(s === 'done' ? 'scan' : s, m) });
+                setState('scan', 'Verifying…');
+                const res = await fetch('{{ path('app_login_face') }}', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email.value, descriptor, _token: '{{ csrf_token('face_login') }}' }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (data.ok) { setState('ok', 'Welcome back! Signing you in…'); window.VAFaceAuth.stop(); location.href = data.redirect; return; }
+                setState('error', data.error || 'Face not recognised.');
+            } catch (e) {
+                setState('error', e.name === 'NotAllowedError' ? 'Camera permission was denied.' : (e.message || 'Face scan failed.'));
+            } finally { busy = false; btn.disabled = false; }
+        });
+    })();
 </script>
 {% endblock %}
